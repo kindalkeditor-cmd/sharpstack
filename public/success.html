@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to Pro — Sharp-Stack</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#f5f5f7;--black:#1d1d1f;--mid:#6e6e73;--gold:#b8892a;--gold-bg:#fdf6e8;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--black);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.card{background:#fff;border-radius:24px;padding:48px 36px;max-width:420px;width:100%;text-align:center;box-shadow:0 4px 40px rgba(0,0,0,0.06);}
+.icon{font-size:3rem;margin-bottom:20px;}
+h1{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;letter-spacing:-1px;margin-bottom:12px;}
+h1 em{font-style:italic;color:var(--gold);}
+p{font-size:0.9rem;color:var(--mid);line-height:1.6;margin-bottom:32px;font-weight:300;}
+.btn{display:inline-block;background:var(--black);color:#fff;border:none;padding:16px 40px;border-radius:28px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;text-decoration:none;transition:opacity 0.2s;}
+.btn:hover{opacity:0.72;}
+.loading{color:var(--mid);font-size:0.82rem;margin-top:16px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">⭐</div>
+  <h1>Welcome to <em>Pro.</em></h1>
+  <p>You now have unlimited extractions. Every book. Every insight. No limits.</p>
+  <a href="/" class="btn" id="homeBtn">Start extracting →</a>
+  <div class="loading" id="status">Activating your account...</div>
+</div>
+
+<script>
+async function activate(){
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+  if(!sessionId){ document.getElementById('status').textContent = ''; return; }
+
+  try {
+    const res = await fetch('/verify-payment',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session_id: sessionId})
+    });
+    const data = await res.json();
+    if(data.success && data.token){
+      localStorage.setItem('ss_pro_token', data.token);
+      document.getElementById('status').textContent = '✓ Pro activated successfully';
+    } else {
+      document.getElementById('status').textContent = 'Activation pending — you\'re all set.';
+    }
+  } catch(e){
+    document.getElementById('status').textContent = '';
+  }
+}
+activate();
+</script>
+</body>
+</html>
