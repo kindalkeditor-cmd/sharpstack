@@ -46,7 +46,7 @@ function getIP(req) {
 }
 
 // ---- EXTRACT ENDPOINT ----
-app.post('/extract', extractLimiter, async (req, res) => {
+app.post('/save-email', rateLimit({ windowMs: 60*60*1000, max: 5, validate: { xForwardedForHeader: false } }), async (req, res) => {
   const { title, token } = req.body;
   if (!title) return res.status(400).json({ error: 'No title provided' });
 
