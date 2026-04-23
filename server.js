@@ -124,15 +124,9 @@ app.post('/create-checkout', async (req, res) => {
       payment_method_types: ['card'],
       mode: 'subscription',
       line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: isAnnual ? 'Sharp-Stack Pro — Annual' : 'Sharp-Stack Pro — Monthly',
-            description: 'Unlimited book extractions + weekly curated drops'
-          },
-          unit_amount: isAnnual ? 7900 : 900,
-          recurring: { interval: isAnnual ? 'year' : 'month' }
-        },
+        price: isAnnual
+          ? process.env.STRIPE_ANNUAL_PRICE_ID
+          : process.env.STRIPE_MONTHLY_PRICE_ID,
         quantity: 1
       }],
       success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
