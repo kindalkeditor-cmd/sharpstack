@@ -21,7 +21,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: { error: 'Too many requests. Please slow down.' }
+  message: { error: 'Too many requests. Please slow down.' },
+  validate: { xForwardedForHeader: false }
 }));
 
 // Extract endpoint: max 10 per hour per IP (prevents API abuse)
