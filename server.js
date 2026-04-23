@@ -29,7 +29,8 @@ app.use(rateLimit({
 const extractLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 10,
-  message: { error: 'Hourly extraction limit reached. Upgrade to Pro for unlimited access.' }
+  message: { error: 'Hourly extraction limit reached. Upgrade to Pro for unlimited access.' },
+  validate: { xForwardedForHeader: false }
 });
 
 // ---- SERVER-SIDE USAGE TRACKING ----
