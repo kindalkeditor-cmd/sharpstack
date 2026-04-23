@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security headers
 app.use(helmet({ contentSecurityPolicy: false }));
