@@ -17,7 +17,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ---- RATE LIMITING ----
-// Global: 100 requests per 15 min per IP
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -25,7 +24,6 @@ app.use(rateLimit({
   validate: { xForwardedForHeader: false }
 }));
 
-// Extract endpoint: max 10 per hour per IP (prevents API abuse)
 const extractLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 10,
@@ -34,8 +32,7 @@ const extractLimiter = rateLimit({
 });
 
 // ---- SERVER-SIDE USAGE TRACKING ----
-// In production, replace with a real database (e.g. Redis or Postgres)
-const freeUsage = {}; // { ip: count }
+const freeUsage = {};
 const proTokens = new Set();
 const emailList = new Set();
 
@@ -46,14 +43,13 @@ function getIP(req) {
 }
 
 // ---- EXTRACT ENDPOINT ----
-app.post('/save-email', rateLimit({ windowMs: 60*60*1000, max: 5, validate: { xForwardedForHeader: false } }), async (req, res) => {
+app.post('/extract', extractLimiter, async (req, res) => {
   const { title, token } = req.body;
   if (!title) return res.status(400).json({ error: 'No title provided' });
 
   const ip = getIP(req);
   const isPro = token && proTokens.has(token);
 
-  // Enforce free limit server-side
   if (!isPro) {
     const used = freeUsage[ip] || 0;
     if (used >= FREE_LIMIT) {
@@ -95,7 +91,6 @@ Return ONLY valid JSON, no markdown:
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
 
-    // Increment usage after successful extraction
     if (!isPro) {
       freeUsage[ip] = (freeUsage[ip] || 0) + 1;
     }
@@ -109,7 +104,7 @@ Return ONLY valid JSON, no markdown:
 });
 
 // ---- EMAIL CAPTURE ----
-app.post('/save-email', rateLimit({ windowMs: 60*60*1000, max: 5 }), async (req, res) => {
+app.post('/save-email', rateLimit({ windowMs: 60*60*1000, max: 5, validate: { xForwardedForHeader: false } }), async (req, res) => {
   const { email } = req.body;
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'Invalid email' });
   emailList.add(email);
@@ -119,7 +114,7 @@ app.post('/save-email', rateLimit({ windowMs: 60*60*1000, max: 5 }), async (req,
 
 // ---- STRIPE CHECKOUT ----
 app.post('/create-checkout', async (req, res) => {
-  const { plan } = req.body; // 'monthly' or 'annual'
+  const { plan } = req.body;
   const isAnnual = plan === 'annual';
 
   try {
