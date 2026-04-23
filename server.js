@@ -125,8 +125,8 @@ app.post('/create-checkout', async (req, res) => {
       mode: 'subscription',
       line_items: [{
         price: isAnnual
-          ? process.env.STRIPE_ANNUAL_PRICE_ID
-          : process.env.STRIPE_MONTHLY_PRICE_ID,
+          ? 'price_1TPQcmCsPE5vWH8Z5ymSC5RO'
+          : 'price_1TPQbTCsPE5vWH8ZgevVEBf4',
         quantity: 1
       }],
       success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
