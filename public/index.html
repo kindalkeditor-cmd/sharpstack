@@ -24,7 +24,7 @@ nav{border-bottom:0.5px solid var(--border);position:sticky;top:0;background:rgb
 .nav-btn{background:var(--black);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer;transition:opacity 0.2s;}
 .nav-btn:hover{opacity:0.7;}
 
-/* HERO — two column on desktop */
+/* HERO */
 .hero-section{padding:80px 0;border-bottom:0.5px solid var(--border);}
 .hero-inner{max-width:var(--wrap);margin:0 auto;padding:0 48px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
 .hero-left{}
@@ -242,9 +242,9 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
     <div class="proof-item"><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
     <div class="proof-item"><div class="proof-num">60s</div><div class="proof-label">insights out</div></div>
     <div class="proof-item"><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
-    <div class="proof-item"><div class="proof-num">$0</div><div class="proof-label">to start</div></div>
+    <div class="proof-item"><div class="proof-num">€0</div><div class="proof-label">to start</div></div>
     <div class="proof-item"><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
-    <div class="proof-item"><div class="proof-num">$9</div><div class="proof-label">to go unlimited</div></div>
+    <div class="proof-item"><div class="proof-num">€9</div><div class="proof-label">to go unlimited</div></div>
   </div>
 </div>
 
@@ -292,7 +292,7 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
     <div class="price-cards">
       <div class="pc">
         <div class="pc-plan">Free</div>
-        <div class="pc-price">$0</div>
+        <div class="pc-price">€0</div>
         <div class="pc-period">forever</div>
         <ul class="pc-list">
           <li>3 free extractions</li>
@@ -304,7 +304,7 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
       <div class="pc hot">
         <div class="hot-tag">Most popular</div>
         <div class="pc-plan">Pro</div>
-        <div class="pc-price" id="proPrice">$9<sub>/mo</sub></div>
+        <div class="pc-price" id="proPrice">€9<sub>/mo</sub></div>
         <div class="pc-period" id="proPeriod">billed monthly</div>
         <ul class="pc-list">
           <li>Unlimited extractions</li>
@@ -345,14 +345,14 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
     <div class="modal-price-row">
       <div class="modal-plan selected" id="plan-monthly" onclick="selectPlan('monthly')">
         <div class="modal-plan-name">Monthly</div>
-        <div class="modal-plan-price">$9</div>
+        <div class="modal-plan-price">€9</div>
         <div class="modal-plan-sub">per month</div>
       </div>
       <div class="modal-plan" id="plan-annual" onclick="selectPlan('annual')">
         <div class="modal-plan-name">Annual</div>
-        <div class="modal-plan-price">$79</div>
+        <div class="modal-plan-price">€79</div>
         <div class="modal-plan-sub">per year</div>
-        <div class="modal-plan-save">Save $29</div>
+        <div class="modal-plan-save">Save €29</div>
       </div>
     </div>
     <input type="email" class="email-input" id="emailInput" placeholder="Your email (for receipt)" />
@@ -397,8 +397,8 @@ function togglePlan(){
   document.getElementById('planToggle').classList.toggle('on',isAnnual);
   document.getElementById('lbl-monthly').classList.toggle('active',!isAnnual);
   document.getElementById('lbl-annual').classList.toggle('active',isAnnual);
-  document.getElementById('proPrice').innerHTML=isAnnual?'$6.58<sub>/mo</sub>':'$9<sub>/mo</sub>';
-  document.getElementById('proPeriod').textContent=isAnnual?'$79 billed annually':'billed monthly';
+  document.getElementById('proPrice').innerHTML=isAnnual?'€6.58<sub>/mo</sub>':'€9<sub>/mo</sub>';
+  document.getElementById('proPeriod').textContent=isAnnual?'€79 billed annually':'billed monthly';
 }
 
 function showPaywall(){document.getElementById('modalOverlay').classList.add('show');}
