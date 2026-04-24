@@ -186,7 +186,7 @@ app.post('/create-checkout', async (req, res) => {
 
   try {
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card'],app
       mode: 'subscription',
       customer_email: user?.email || undefined,
       line_items: [{
@@ -229,4 +229,55 @@ app.post('/verify-payment', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// ---- ADMIN MIDDLEWARE ----
+async function isAdmin(req, res, next) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { data: { user } } = await supabase.auth.getUser(token);
+    if (user?.email !== 'amadejgkladnik@gmail.com') return res.status(403).json({ error: 'Forbidden' });
+    req.adminUser = user;
+    next();
+  } catch (e) { res.status(401).json({ error: 'Unauthorized' }); }
+}
+
+// ---- ADMIN: GET ALL USERS ----
+app.get('/admin/users', isAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ users: data });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- ADMIN: TOGGLE PRO ----
+app.post('/admin/toggle-pro', isAdmin, async (req, res) => {
+  const { userId, isPro } = req.body;
+  try {
+    const { error } = await supabase.from('users').update({ is_pro: isPro }).eq('id', userId);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- ADMIN: RESET PASSWORD ----
+app.post('/admin/reset-password', isAdmin, async (req, res) => {
+  const { userId, password } = req.body;
+  try {
+    const { error } = await supabase.auth.admin.updateUserById(userId, { password });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- ADMIN: DELETE USER ----
+app.post('/admin/delete-user', isAdmin, async (req, res) => {
+  const { userId } = req.body;
+  try {
+    await supabase.from('users').delete().eq('id', userId);
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 app.listen(PORT, () => console.log(`Sharp-Stack running at http://localhost:${PORT}`));
