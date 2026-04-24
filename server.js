@@ -12,8 +12,8 @@ const app = express();
 app.set('trust proxy', 1);
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SECRET_KEY
+  'https://vhgirrgawajyefjrwdnk.supabase.co',
+  'sb_secret_UCsF6U7LrhKb6FHFr4-Adw_0Qhv8otY'
 );
 
 app.use(helmet({ contentSecurityPolicy: false }));
