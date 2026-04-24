@@ -6,17 +6,21 @@ const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.set('trust proxy', 1);
 
-// Security headers
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SECRET_KEY
+);
+
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ---- RATE LIMITING ----
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -31,15 +35,27 @@ const extractLimiter = rateLimit({
   validate: { xForwardedForHeader: false }
 });
 
-// ---- SERVER-SIDE USAGE TRACKING ----
 const freeUsage = {};
-const proTokens = new Set();
-const emailList = new Set();
-
 const FREE_LIMIT = 3;
 
 function getIP(req) {
   return req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+}
+
+async function getUserFromToken(token) {
+  if (!token) return null;
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return null;
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_pro')
+      .eq('id', user.id)
+      .single();
+    return { ...user, isPro: profile?.is_pro || false };
+  } catch (e) {
+    return null;
+  }
 }
 
 // ---- EXTRACT ENDPOINT ----
@@ -48,7 +64,8 @@ app.post('/extract', extractLimiter, async (req, res) => {
   if (!title) return res.status(400).json({ error: 'No title provided' });
 
   const ip = getIP(req);
-  const isPro = token && proTokens.has(token);
+  const user = await getUserFromToken(token);
+  const isPro = user?.isPro || false;
 
   if (!isPro) {
     const used = freeUsage[ip] || 0;
@@ -103,30 +120,82 @@ Return ONLY valid JSON, no markdown:
   }
 });
 
-// ---- EMAIL CAPTURE ----
-app.post('/save-email', rateLimit({ windowMs: 60*60*1000, max: 5, validate: { xForwardedForHeader: false } }), async (req, res) => {
-  const { email } = req.body;
-  if (!email || !email.includes('@')) return res.status(400).json({ error: 'Invalid email' });
-  emailList.add(email);
-  console.log(`New email: ${email} (total: ${emailList.size})`);
-  res.json({ success: true });
+// ---- AUTH: REGISTER ----
+app.post('/auth/register', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  try {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return res.status(400).json({ error: error.message });
+
+    // Create user profile
+    await supabase.from('users').insert({
+      id: data.user.id,
+      email: data.user.email,
+      is_pro: false
+    });
+
+    res.json({ success: true, token: data.session?.access_token, user: { email: data.user.email } });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ---- AUTH: LOGIN ----
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return res.status(400).json({ error: error.message });
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_pro')
+      .eq('id', data.user.id)
+      .single();
+
+    res.json({
+      success: true,
+      token: data.session.access_token,
+      user: { email: data.user.email, isPro: profile?.is_pro || false }
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ---- AUTH: STATUS ----
+app.post('/status', async (req, res) => {
+  const { token } = req.body;
+  const ip = getIP(req);
+  const user = await getUserFromToken(token);
+  const isPro = user?.isPro || false;
+  const used = freeUsage[ip] || 0;
+  const remaining = isPro ? 999 : Math.max(0, FREE_LIMIT - used);
+  res.json({ isPro, remaining, used, email: user?.email || null });
 });
 
 // ---- STRIPE CHECKOUT ----
 app.post('/create-checkout', async (req, res) => {
-  const { plan } = req.body;
+  const { plan, token } = req.body;
   const isAnnual = plan === 'annual';
+  const user = await getUserFromToken(token);
 
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
+      customer_email: user?.email || undefined,
       line_items: [{
         price: isAnnual
           ? 'price_1TPQcmCsPE5vWH8Z5ymSC5RO'
           : 'price_1TPQbTCsPE5vWH8ZgevVEBf4',
         quantity: 1
       }],
+      metadata: { user_id: user?.id || '' },
       success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/`
     });
@@ -142,25 +211,21 @@ app.post('/verify-payment', async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     if (session.payment_status === 'paid' || session.status === 'complete') {
-      const token = session.subscription || session.id;
-      proTokens.add(token);
-      res.json({ success: true, token });
+      const userId = session.metadata?.user_id;
+      if (userId) {
+        await supabase.from('users').update({
+          is_pro: true,
+          stripe_customer_id: session.customer,
+          stripe_subscription_id: session.subscription
+        }).eq('id', userId);
+      }
+      res.json({ success: true });
     } else {
       res.json({ success: false });
     }
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-});
-
-// ---- CHECK STATUS ----
-app.post('/status', (req, res) => {
-  const { token } = req.body;
-  const ip = getIP(req);
-  const isPro = token && proTokens.has(token);
-  const used = freeUsage[ip] || 0;
-  const remaining = isPro ? 999 : Math.max(0, FREE_LIMIT - used);
-  res.json({ isPro, remaining, used });
 });
 
 const PORT = process.env.PORT || 3000;
