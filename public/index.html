@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharp-Stack — Stack sharp knowledge. Skip the noise.</title>
+<meta name="description" content="Every great business book distilled to only what matters. No fluff. No stories. Just the edge.">
+<meta property="og:title" content="Sharp-Stack — The unfair reading advantage">
+<meta property="og:description" content="Stack sharp knowledge. Skip the noise. 300 pages → 60 seconds.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#f5f5f7;--surface:#fff;--border:#d2d2d7;--black:#1d1d1f;--mid:#6e6e73;--gold:#b8892a;--gold-bg:#fdf6e8;--wrap:1200px;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--black);}
+.container{max-width:var(--wrap);margin:0 auto;padding:0 48px;}
+nav{border-bottom:0.5px solid var(--border);position:sticky;top:0;background:rgba(245,245,247,0.92);backdrop-filter:blur(16px);z-index:10;}
+.nav-inner{max-width:var(--wrap);margin:0 auto;padding:18px 48px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:var(--black);}
+.logo em{font-style:normal;color:var(--gold);}
+.nav-right{display:flex;gap:10px;align-items:center;}
+.nav-pro{background:var(--gold);color:#fff;border:none;padding:6px 14px;border-radius:20px;font-size:0.7rem;display:none;}
+.nav-btn{background:var(--black);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer;transition:opacity 0.2s;}
+.nav-btn:hover{opacity:0.7;}
+.nav-email{font-size:0.72rem;color:var(--mid);}
+.nav-logout{background:none;border:0.5px solid var(--border);color:var(--mid);padding:7px 14px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.72rem;cursor:pointer;}
+.nav-logout:hover{border-color:var(--black);color:var(--black);}
+.hero-section{padding:80px 0;border-bottom:0.5px solid var(--border);}
+.hero-inner{max-width:var(--wrap);margin:0 auto;padding:0 48px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.hero-eyebrow{font-size:0.68rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,4.5vw,5rem);font-weight:900;line-height:1.04;letter-spacing:-2px;margin-bottom:24px;}
+.hero-title em{font-style:italic;color:var(--gold);}
+.hero-sub{font-size:1rem;color:var(--mid);line-height:1.7;margin-bottom:36px;font-weight:300;max-width:420px;}
+.hero-btn{background:var(--black);color:#fff;border:none;padding:16px 36px;border-radius:28px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.2s;display:inline-block;}
+.hero-btn:hover{opacity:0.72;}
+.hero-note{margin-top:14px;font-size:0.68rem;color:var(--mid);}
+.hero-right{background:var(--surface);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;}
+.hero-card-head{background:var(--black);padding:22px 24px;}
+.hero-card-badge{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);border:0.5px solid rgba(184,137,42,0.4);border-radius:8px;padding:3px 10px;display:inline-block;margin-bottom:10px;}
+.hero-card-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#fff;margin-bottom:4px;}
+.hero-card-author{font-size:0.72rem;color:rgba(255,255,255,0.4);}
+.hero-card-body{padding:20px 24px;}
+.hero-core{background:var(--gold-bg);border:0.5px solid rgba(184,137,42,0.2);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+.hero-core-label{font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.hero-core-text{font-size:0.82rem;line-height:1.55;color:var(--black);}
+.hero-point{display:flex;gap:10px;padding:7px 0;border-bottom:0.5px solid #f0f0f2;font-size:0.78rem;color:#3a3a3c;line-height:1.5;}
+.hero-point:last-child{border-bottom:none;}
+.hero-point-num{color:var(--gold);font-size:0.65rem;min-width:18px;padding-top:2px;flex-shrink:0;}
+.proof-bar{background:var(--surface);border-bottom:0.5px solid var(--border);}
+.proof-inner{max-width:var(--wrap);margin:0 auto;padding:36px 48px;display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:24px;}
+.proof-item{text-align:center;}
+.proof-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--black);line-height:1;}
+.proof-label{font-size:0.7rem;color:var(--mid);margin-top:4px;}
+.extract-section{padding:80px 0;}
+.extract-inner{max-width:var(--wrap);margin:0 auto;padding:0 48px;}
+.section-header{text-align:center;margin-bottom:48px;}
+.section-label{font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;letter-spacing:-0.8px;color:var(--black);margin-bottom:10px;}
+.section-sub{font-size:0.9rem;color:var(--mid);font-weight:300;max-width:440px;margin:0 auto;}
+.usage-bar{max-width:480px;margin:0 auto 36px;text-align:center;}
+.usage-text{font-size:0.72rem;color:var(--mid);margin-bottom:8px;}
+.usage-track{background:var(--border);border-radius:4px;height:3px;}
+.usage-fill{background:var(--gold);height:3px;border-radius:4px;transition:width 0.4s;}
+.books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px;}
+.book-card{background:var(--surface);border:0.5px solid var(--border);padding:20px 18px;border-radius:14px;cursor:pointer;transition:box-shadow 0.15s,transform 0.15s;}
+.book-card:hover{box-shadow:0 6px 24px rgba(0,0,0,0.08);transform:translateY(-3px);border-color:#bbb;}
+.book-card-title{font-size:0.82rem;font-weight:500;color:var(--black);margin-bottom:4px;line-height:1.3;}
+.book-card-author{font-size:0.68rem;color:var(--mid);}
+.search-row{display:flex;gap:10px;margin-bottom:48px;max-width:640px;margin-left:auto;margin-right:auto;}
+.search-row input{flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:24px;padding:14px 22px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--black);outline:none;transition:border-color 0.2s;}
+.search-row input:focus{border-color:var(--black);}
+.search-row input::placeholder{color:var(--mid);}
+.search-row button{background:var(--black);color:#fff;border:none;border-radius:24px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;white-space:nowrap;transition:opacity 0.2s;font-weight:500;}
+.search-row button:hover{opacity:0.72;}
+.search-row button:disabled{opacity:0.4;cursor:not-allowed;}
+.result-wrap{max-width:800px;margin:0 auto;}
+.loader{display:flex;align-items:center;justify-content:center;gap:10px;padding:56px;color:var(--mid);font-size:0.82rem;}
+.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.2s ease infinite;margin:0 2px;}
+.dots span:nth-child(2){animation-delay:0.2s;}
+.dots span:nth-child(3){animation-delay:0.4s;}
+.result-card{background:var(--surface);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;animation:fadeUp 0.4s ease both;}
+.result-hero{background:var(--black);padding:32px 36px;position:relative;}
+.result-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.book-badge{display:inline-block;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);border:0.5px solid rgba(184,137,42,0.4);border-radius:10px;padding:3px 10px;margin-bottom:14px;}
+.book-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:6px;}
+.book-author{font-size:0.78rem;color:rgba(255,255,255,0.4);}
+.result-body{padding:32px 36px;display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+.result-body-full{grid-column:1/-1;}
+.core-idea{background:var(--gold-bg);border:0.5px solid rgba(184,137,42,0.2);border-radius:12px;padding:18px 20px;}
+.core-label{font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.core-text{font-size:0.92rem;line-height:1.6;color:var(--black);}
+.result-section-label{font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--mid);margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--border);}
+.point-row{display:flex;gap:12px;padding:9px 0;border-bottom:0.5px solid #f0f0f2;align-items:flex-start;}
+.point-row:last-child{border-bottom:none;}
+.point-badge{min-width:26px;height:26px;border-radius:50%;background:var(--bg);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.62rem;font-weight:500;color:var(--mid);flex-shrink:0;margin-top:1px;}
+.point-badge.arrow{background:var(--gold-bg);border-color:rgba(184,137,42,0.3);color:var(--gold);font-size:0.8rem;}
+.point-text{font-size:0.82rem;line-height:1.6;color:#3a3a3c;padding-top:2px;}
+.one-liner-wrap{background:var(--black);border-radius:12px;padding:22px 24px;}
+.one-liner-label{font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px;}
+.one-liner-text{font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;color:var(--gold);line-height:1.5;}
+.price-section{background:var(--surface);padding:80px 0;border-top:0.5px solid var(--border);}
+.price-inner{max-width:var(--wrap);margin:0 auto;padding:0 48px;}
+.toggle-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:40px;}
+.toggle-label{font-size:0.82rem;color:var(--mid);}
+.toggle-label.active{color:var(--black);font-weight:500;}
+.save-badge{background:var(--gold-bg);color:var(--gold);font-size:0.62rem;padding:2px 8px;border-radius:8px;font-weight:500;}
+.toggle{width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;position:relative;transition:background 0.2s;}
+.toggle.on{background:var(--black);}
+.toggle-dot{width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:left 0.2s;}
+.toggle.on .toggle-dot{left:23px;}
+.price-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:640px;margin:0 auto;}
+.pc{background:var(--bg);border:0.5px solid var(--border);padding:32px 28px;border-radius:18px;text-align:center;position:relative;}
+.pc.hot{border-color:var(--gold);background:var(--surface);}
+.hot-tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:0.6rem;padding:3px 14px;border-radius:10px;white-space:nowrap;letter-spacing:0.1em;text-transform:uppercase;}
+.pc-plan{font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--mid);margin-bottom:12px;}
+.pc-price{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:var(--black);line-height:1;}
+.pc-price sub{font-size:0.9rem;font-weight:300;color:var(--mid);}
+.pc-period{font-size:0.68rem;color:var(--mid);margin-bottom:24px;margin-top:4px;}
+.pc-list{list-style:none;text-align:left;margin-bottom:24px;}
+.pc-list li{font-size:0.78rem;color:var(--mid);padding:5px 0;border-bottom:0.5px solid var(--border);display:flex;gap:8px;font-weight:300;}
+.pc-list li::before{content:'→';color:var(--gold);font-size:0.68rem;flex-shrink:0;margin-top:2px;}
+.pc-btn{width:100%;padding:13px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer;border-radius:20px;transition:opacity 0.2s;letter-spacing:0.04em;}
+.pc-btn.light{background:transparent;border:0.5px solid var(--border);color:var(--black);}
+.pc-btn.light:hover{border-color:var(--black);}
+.pc-btn.dark{background:var(--black);border:none;color:#fff;}
+.pc-btn.dark:hover{opacity:0.72;}
+.bottom-cta{padding:100px 0;text-align:center;border-top:0.5px solid var(--border);}
+.bottom-cta h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.6rem);font-weight:900;letter-spacing:-1.5px;margin-bottom:16px;}
+.bottom-cta h2 em{font-style:italic;color:var(--gold);}
+.bottom-cta p{font-size:0.95rem;color:var(--mid);margin-bottom:36px;font-weight:300;}
+footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;max-width:100%;}
+.fl{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:900;color:var(--black);}
+.fl em{font-style:normal;color:var(--gold);}
+.fc{font-size:0.68rem;color:var(--mid);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border-radius:24px;padding:40px 36px;max-width:440px;width:100%;text-align:center;animation:fadeUp 0.3s ease both;}
+.modal-icon{font-size:2.2rem;margin-bottom:16px;}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;letter-spacing:-0.5px;margin-bottom:10px;}
+.modal h2 em{font-style:italic;color:var(--gold);}
+.modal p{font-size:0.88rem;color:var(--mid);line-height:1.6;margin-bottom:24px;font-weight:300;}
+.modal-features{list-style:none;text-align:left;margin-bottom:24px;background:var(--bg);border-radius:12px;padding:14px 18px;}
+.modal-features li{font-size:0.8rem;color:var(--black);padding:4px 0;display:flex;gap:8px;}
+.modal-features li::before{content:'→';color:var(--gold);flex-shrink:0;}
+.modal-price-row{display:flex;gap:10px;margin-bottom:16px;}
+.modal-plan{flex:1;border:0.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:border-color 0.2s;text-align:center;}
+.modal-plan.selected{border-color:var(--gold);background:var(--gold-bg);}
+.modal-plan-name{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);margin-bottom:4px;}
+.modal-plan-price{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--black);}
+.modal-plan-sub{font-size:0.62rem;color:var(--mid);}
+.modal-plan-save{font-size:0.6rem;color:var(--gold);font-weight:500;margin-top:2px;}
+.modal-btn{width:100%;background:var(--black);color:#fff;border:none;padding:15px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:opacity 0.2s;margin-bottom:10px;}
+.modal-btn:hover{opacity:0.75;}
+.modal-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.modal-close{font-size:0.75rem;color:var(--mid);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.modal-close:hover{color:var(--black);}
+@media(max-width:860px){
+  .hero-inner{grid-template-columns:1fr;gap:40px;}
+  .hero-right{display:none;}
+  .result-body{grid-template-columns:1fr;}
+  .nav-inner,.hero-inner,.extract-inner,.price-inner,.proof-inner{padding-left:24px;padding-right:24px;}
+  footer{padding:24px;}
+  .container{padding:0 24px;}
+}
+@keyframes pulse{0%,80%,100%{transform:scale(0.6);opacity:0.4;}40%{transform:scale(1);opacity:1;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">Sharp<em>-Stack</em></div>
+    <div class="nav-right">
+      <div class="nav-pro" id="proBadge">⭐ Pro</div>
+      <span class="nav-email" id="navEmail" style="display:none"></span>
+      <button class="nav-logout" id="logoutBtn" style="display:none" onclick="logout()">Sign out</button>
+      <button class="nav-btn" id="loginNavBtn" onclick="window.location.href='/login.html'">Sign in →</button>
+    </div>
+  </div>
+</nav>
+
+<div class="hero-section">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">The unfair reading advantage</div>
+      <h1 class="hero-title">Stack sharp knowledge.<br><em>Skip the noise.</em></h1>
+      <p class="hero-sub">Type any business book. Get only what matters. No fluff, no stories — just the edge you can apply today.</p>
+      <button class="hero-btn" onclick="document.getElementById('extract').scrollIntoView({behavior:'smooth'})">Extract your first book free →</button>
+      <p class="hero-note">Free · No credit card · 60 seconds</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card-head">
+        <div class="hero-card-badge">Sharp Extract</div>
+        <div class="hero-card-title">Atomic Habits</div>
+        <div class="hero-card-author">James Clear</div>
+      </div>
+      <div class="hero-card-body">
+        <div class="hero-core">
+          <div class="hero-core-label">Core Idea</div>
+          <div class="hero-core-text">Tiny 1% improvements compound into remarkable results — systems beat goals every time.</div>
+        </div>
+        <div class="hero-points">
+          <div class="hero-point"><span class="hero-point-num">01</span>You don't rise to goals — you fall to your systems</div>
+          <div class="hero-point"><span class="hero-point-num">02</span>Identity drives behavior. Become the person first</div>
+          <div class="hero-point"><span class="hero-point-num">03</span>Make habits obvious, attractive, easy, satisfying</div>
+          <div class="hero-point"><span class="hero-point-num">04</span>Never miss twice — one slip is an accident</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="proof-bar">
+  <div class="proof-inner">
+    <div class="proof-item"><div class="proof-num">300</div><div class="proof-label">pages in</div></div>
+    <div class="proof-item"><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
+    <div class="proof-item"><div class="proof-num">60s</div><div class="proof-label">insights out</div></div>
+    <div class="proof-item"><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
+    <div class="proof-item"><div class="proof-num">€0</div><div class="proof-label">to start</div></div>
+    <div class="proof-item"><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
+    <div class="proof-item"><div class="proof-num">€9</div><div class="proof-label">to go unlimited</div></div>
+  </div>
+</div>
+
+<div id="extract" class="extract-section">
+  <div class="extract-inner">
+    <div class="section-header">
+      <div class="section-label">Try it now</div>
+      <h2 class="section-title">Pick a book. Get the edge.</h2>
+      <p class="section-sub">Click any book or type your own below. Results in 60 seconds.</p>
+    </div>
+    <div class="usage-bar" id="usageBar">
+      <div class="usage-text" id="usageText">3 free extractions remaining</div>
+      <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:100%"></div></div>
+    </div>
+    <div class="books-grid">
+      <div class="book-card" onclick="extract('Atomic Habits')"><div class="book-card-title">Atomic Habits</div><div class="book-card-author">James Clear</div></div>
+      <div class="book-card" onclick="extract('$100M Offers')"><div class="book-card-title">$100M Offers</div><div class="book-card-author">Alex Hormozi</div></div>
+      <div class="book-card" onclick="extract('The E-Myth Revisited')"><div class="book-card-title">The E-Myth Revisited</div><div class="book-card-author">Michael Gerber</div></div>
+      <div class="book-card" onclick="extract('Never Split the Difference')"><div class="book-card-title">Never Split the Difference</div><div class="book-card-author">Chris Voss</div></div>
+      <div class="book-card" onclick="extract('Deep Work')"><div class="book-card-title">Deep Work</div><div class="book-card-author">Cal Newport</div></div>
+      <div class="book-card" onclick="extract('Rich Dad Poor Dad')"><div class="book-card-title">Rich Dad Poor Dad</div><div class="book-card-author">Robert Kiyosaki</div></div>
+    </div>
+    <div class="search-row">
+      <input type="text" id="bookInput" placeholder="Or type any book title..." onkeydown="if(event.key==='Enter')go()"/>
+      <button id="goBtn" onclick="go()">Extract →</button>
+    </div>
+    <div class="result-wrap"><div id="output"></div></div>
+  </div>
+</div>
+
+<div class="price-section">
+  <div class="price-inner">
+    <div class="section-header">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-title">Simple. Sharp.</h2>
+      <p class="section-sub">Start free. Pay only when you love it.</p>
+    </div>
+    <div class="toggle-wrap">
+      <span class="toggle-label active" id="lbl-monthly">Monthly</span>
+      <div class="toggle" id="planToggle" onclick="togglePlan()"><div class="toggle-dot"></div></div>
+      <span class="toggle-label" id="lbl-annual">Annual <span class="save-badge">Save 27%</span></span>
+    </div>
+    <div class="price-cards">
+      <div class="pc">
+        <div class="pc-plan">Free</div>
+        <div class="pc-price">€0</div>
+        <div class="pc-period">forever</div>
+        <ul class="pc-list">
+          <li>3 free extractions</li>
+          <li>Key points only</li>
+          <li>No card needed</li>
+        </ul>
+        <button class="pc-btn light" onclick="document.getElementById('extract').scrollIntoView({behavior:'smooth'})">Start free →</button>
+      </div>
+      <div class="pc hot">
+        <div class="hot-tag">Most popular</div>
+        <div class="pc-plan">Pro</div>
+        <div class="pc-price" id="proPrice">€9<sub>/mo</sub></div>
+        <div class="pc-period" id="proPeriod">billed monthly</div>
+        <ul class="pc-list">
+          <li>Unlimited extractions</li>
+          <li>Key points + actions</li>
+          <li>Weekly curated drops</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <button class="pc-btn dark" onclick="showPaywall()">Get the edge →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-cta">
+  <h2>Read less.<br><em>Know more.</em></h2>
+  <p>Your competitors are reading the whole book. You don't have to.</p>
+  <button class="hero-btn" onclick="document.getElementById('extract').scrollIntoView({behavior:'smooth'})">Extract your first book free →</button>
+</div>
+
+<footer>
+  <div class="fl">Sharp<em>-Stack</em></div>
+  <div class="fc">© 2026 Sharp-Stack. Built for entrepreneurs. &nbsp;|&nbsp; <a href="/privacy-policy.html" style="color:inherit">Privacy</a> &nbsp;|&nbsp; <a href="/terms-of-service.html" style="color:inherit">Terms</a></div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon">⚡</div>
+    <h2>You've found the <em>edge.</em></h2>
+    <p>You've used your 3 free extractions. Unlock unlimited access for less than a coffee a month.</p>
+    <ul class="modal-features">
+      <li>Unlimited book extractions</li>
+      <li>Key points + action steps</li>
+      <li>Weekly curated drops</li>
+      <li>Cancel anytime</li>
+    </ul>
+    <div class="modal-price-row">
+      <div class="modal-plan selected" id="plan-monthly" onclick="selectPlan('monthly')">
+        <div class="modal-plan-name">Monthly</div>
+        <div class="modal-plan-price">€9</div>
+        <div class="modal-plan-sub">per month</div>
+      </div>
+      <div class="modal-plan" id="plan-annual" onclick="selectPlan('annual')">
+        <div class="modal-plan-name">Annual</div>
+        <div class="modal-plan-price">€79</div>
+        <div class="modal-plan-sub">per year</div>
+        <div class="modal-plan-save">Save €29</div>
+      </div>
+    </div>
+    <button class="modal-btn" id="checkoutBtn" onclick="startCheckout()">Get unlimited access →</button>
+    <button class="modal-close" onclick="closeModal()">Maybe later</button>
+  </div>
+</div>
+
+<script>
+let selectedPlan='monthly',isAnnual=false;
+let authToken=localStorage.getItem('ss_token')||null;
+let remaining=3;
+
+function isPro(){return localStorage.getItem('ss_pro')==='1';}
+
+function updateNav(){
+  const email=localStorage.getItem('ss_email');
+  if(authToken&&email){
+    document.getElementById('navEmail').textContent=email;
+    document.getElementById('navEmail').style.display='block';
+    document.getElementById('logoutBtn').style.display='block';
+    document.getElementById('loginNavBtn').style.display='none';
+  } else {
+    document.getElementById('navEmail').style.display='none';
+    document.getElementById('logoutBtn').style.display='none';
+    document.getElementById('loginNavBtn').style.display='block';
+  }
+  if(isPro()){
+    document.getElementById('proBadge').style.display='block';
+  }
+}
+
+function logout(){
+  localStorage.removeItem('ss_token');
+  localStorage.removeItem('ss_email');
+  localStorage.removeItem('ss_pro');
+  window.location.reload();
+}
+
+async function loadStatus(){
+  try{
+    const res=await fetch('/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:authToken})});
+    const data=await res.json();
+    remaining=data.remaining;
+    if(data.isPro){
+      localStorage.setItem('ss_pro','1');
+      document.getElementById('proBadge').style.display='block';
+      document.getElementById('usageBar').style.display='none';
+    } else {
+      updateUsageBar(remaining);
+    }
+  }catch(e){updateUsageBar(3);}
+}
+
+function updateUsageBar(rem){
+  if(isPro()){document.getElementById('usageBar').style.display='none';document.getElementById('proBadge').style.display='block';return;}
+  rem=rem??remaining;
+  const pct=(rem/3)*100;
+  document.getElementById('usageText').textContent=rem>0?`${rem} free extraction${rem===1?'':'s'} remaining`:'Free limit reached — upgrade for unlimited';
+  document.getElementById('usageFill').style.width=pct+'%';
+  document.getElementById('usageFill').style.background=rem===0?'#e05':'var(--gold)';
+}
+
+function selectPlan(plan){
+  selectedPlan=plan;
+  document.getElementById('plan-monthly').classList.toggle('selected',plan==='monthly');
+  document.getElementById('plan-annual').classList.toggle('selected',plan==='annual');
+}
+
+function togglePlan(){
+  isAnnual=!isAnnual;
+  document.getElementById('planToggle').classList.toggle('on',isAnnual);
+  document.getElementById('lbl-monthly').classList.toggle('active',!isAnnual);
+  document.getElementById('lbl-annual').classList.toggle('active',isAnnual);
+  document.getElementById('proPrice').innerHTML=isAnnual?'€6.58<sub>/mo</sub>':'€9<sub>/mo</sub>';
+  document.getElementById('proPeriod').textContent=isAnnual?'€79 billed annually':'billed monthly';
+}
+
+function showPaywall(){
+  if(!authToken){
+    window.location.href='/login.html';
+    return;
+  }
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
+
+async function startCheckout(){
+  const btn=document.getElementById('checkoutBtn');
+  btn.disabled=true;btn.textContent='Redirecting...';
+  try{
+    const res=await fetch('/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:selectedPlan,token:authToken})});
+    const data=await res.json();
+    if(data.url)window.location.href=data.url;
+    else{btn.disabled=false;btn.textContent='Get unlimited access →';alert(data.error||'Something went wrong.');}
+  }catch(e){btn.disabled=false;btn.textContent='Get unlimited access →';alert('Something went wrong. Try again.');}
+}
+
+function go(){const val=document.getElementById('bookInput').value.trim();if(val)extract(val);}
+
+async function extract(title){
+  if(!isPro()&&remaining<=0){showPaywall();return;}
+  const out=document.getElementById('output');
+  document.getElementById('goBtn').disabled=true;
+  document.getElementById('extract').scrollIntoView({behavior:'smooth'});
+  out.innerHTML=`<div class="loader"><div class="dots"><span></span><span></span><span></span></div> Extracting insights...</div>`;
+  try{
+    const res=await fetch('/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,token:authToken})});
+    const d=await res.json();
+    if(d.error==='free_limit_reached'){showPaywall();out.innerHTML='';document.getElementById('goBtn').disabled=false;return;}
+    if(d.error)throw new Error(d.error);
+    if(!isPro()){remaining=d.remaining;updateUsageBar(remaining);}
+    const kp=d.key_points.map((p,i)=>`<div class="point-row"><div class="point-badge">${String(i+1).padStart(2,'0')}</div><div class="point-text">${p}</div></div>`).join('');
+    const as=d.action_steps.map(p=>`<div class="point-row"><div class="point-badge arrow">→</div><div class="point-text">${p}</div></div>`).join('');
+    out.innerHTML=`
+      <div class="result-card">
+        <div class="result-hero">
+          <div class="book-badge">${isPro()?'⭐ Pro Extract':'Sharp Extract'}</div>
+          <div class="book-name">${d.title}</div>
+          <div class="book-author">${d.author}</div>
+        </div>
+        <div class="result-body">
+          <div class="result-body-full">
+            <div class="core-idea"><div class="core-label">Core Idea</div><div class="core-text">${d.core_idea}</div></div>
+          </div>
+          <div class="result-section"><div class="result-section-label">Key Points</div>${kp}</div>
+          <div class="result-section"><div class="result-section-label">Action Steps</div>${as}</div>
+          <div class="result-body-full"><div class="one-liner-wrap"><div class="one-liner-label">Remember This</div><div class="one-liner-text">"${d.one_liner}"</div></div></div>
+        </div>
+      </div>`;
+    if(!isPro()&&remaining<=0)setTimeout(()=>showPaywall(),3000);
+  }catch(e){out.innerHTML=`<p style="color:#e25;font-size:0.82rem;text-align:center;padding:20px">${e.message||'Something went wrong. Try again.'}</p>`;}
+  document.getElementById('goBtn').disabled=false;
+}
+
+updateNav();
+loadStatus();
+</script>
+</body>
+</html>
