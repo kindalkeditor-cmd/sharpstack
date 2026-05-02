@@ -6,72 +6,143 @@ const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { createClient } = require('@supabase/supabase-js');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { Pool } = require('pg');
 
 const app = express();
-app.set('trust proxy', 1);
 
-const supabase = createClient(
-  'https://vhgirrgawajyefjrwdnk.supabase.co',
-  'sb_secret_UCsF6U7LrhKb6FHFr4-Adw_0Qhv8otY'
-);
+// Database
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
+// Init database tables
+async function initDB() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      is_pro BOOLEAN DEFAULT FALSE,
+      stripe_customer_id VARCHAR(255),
+      stripe_subscription_id VARCHAR(255),
+      extractions_used INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  console.log('Database ready');
+}
+initDB();
+
+// Security
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { error: 'Too many requests. Please slow down.' },
-  validate: { xForwardedForHeader: false }
-}));
+// Rate limiting
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+const extractLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20 });
 
-const extractLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 10,
-  message: { error: 'Hourly extraction limit reached. Upgrade to Pro for unlimited access.' },
-  validate: { xForwardedForHeader: false }
-});
-
-const freeUsage = {};
+const JWT_SECRET = process.env.JWT_SECRET || 'sharpstack-secret-key-change-in-production';
 const FREE_LIMIT = 3;
+const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
 
-function getIP(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-}
-
-async function getUserFromToken(token) {
-  if (!token) return null;
+// ---- AUTH MIDDLEWARE ----
+function authMiddleware(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) { req.user = null; return next(); }
   try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return null;
-    const { data: profile } = await supabase
-      .from('users')
-      .select('is_pro')
-      .eq('id', user.id)
-      .single();
-    return { ...user, isPro: profile?.is_pro || false };
-  } catch (e) {
-    return null;
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch(e) {
+    req.user = null;
+    next();
   }
 }
 
-// ---- EXTRACT ENDPOINT ----
-app.post('/extract', extractLimiter, async (req, res) => {
-  const { title, token } = req.body;
+// ---- SIGNUP ----
+app.post('/auth/signup', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email, is_pro, extractions_used',
+      [email.toLowerCase(), hashed]
+    );
+    const user = result.rows[0];
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { email: user.email, isPro: user.is_pro, extractionsUsed: user.extractions_used } });
+  } catch(e) {
+    if (e.code === '23505') return res.status(400).json({ error: 'Email already registered' });
+    res.status(500).json({ error: 'Signup failed' });
+  }
+});
+
+// ---- LOGIN ----
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
+    const user = result.rows[0];
+    if (!user) return res.status(400).json({ error: 'Invalid email or password' });
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(400).json({ error: 'Invalid email or password' });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { email: user.email, isPro: user.is_pro, extractionsUsed: user.extractions_used } });
+  } catch(e) {
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// ---- GET USER STATUS ----
+app.get('/auth/me', authMiddleware, async (req, res) => {
+  if (!req.user) return res.json({ loggedIn: false });
+  try {
+    const result = await pool.query('SELECT email, is_pro, extractions_used FROM users WHERE id = $1', [req.user.id]);
+    const user = result.rows[0];
+    if (!user) return res.json({ loggedIn: false });
+    res.json({
+      loggedIn: true,
+      email: user.email,
+      isPro: user.is_pro,
+      extractionsUsed: user.extractions_used,
+      remaining: user.is_pro ? 999 : Math.max(0, FREE_LIMIT - user.extractions_used)
+    });
+  } catch(e) {
+    res.json({ loggedIn: false });
+  }
+});
+
+// ---- EXTRACT ----
+app.post('/extract', extractLimiter, authMiddleware, async (req, res) => {
+  const { title } = req.body;
   if (!title) return res.status(400).json({ error: 'No title provided' });
 
-  const ip = getIP(req);
-  const user = await getUserFromToken(token);
-  const isPro = user?.isPro || false;
+  let isPro = false;
+  let userId = null;
 
-  if (!isPro) {
-    const used = freeUsage[ip] || 0;
-    if (used >= FREE_LIMIT) {
+  if (req.user) {
+    const result = await pool.query('SELECT is_pro, extractions_used FROM users WHERE id = $1', [req.user.id]);
+    const user = result.rows[0];
+    if (!user) return res.status(401).json({ error: 'User not found' });
+    isPro = user.is_pro;
+    userId = req.user.id;
+
+    if (!isPro && user.extractions_used >= FREE_LIMIT) {
       return res.status(403).json({ error: 'free_limit_reached' });
     }
+  } else {
+    return res.status(401).json({ error: 'login_required' });
   }
 
   const prompt = `You are a brutal book distiller for entrepreneurs. Extract ONLY actionable insights. No fluff, no stories.
@@ -93,7 +164,7 @@ Return ONLY valid JSON, no markdown:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_KEY,
+        'x-api-key': ANTHROPIC_KEY,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
@@ -108,176 +179,81 @@ Return ONLY valid JSON, no markdown:
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
 
+    // Increment usage
     if (!isPro) {
-      freeUsage[ip] = (freeUsage[ip] || 0) + 1;
+      await pool.query('UPDATE users SET extractions_used = extractions_used + 1 WHERE id = $1', [userId]);
     }
 
-    const remaining = isPro ? 999 : Math.max(0, FREE_LIMIT - (freeUsage[ip] || 0));
+    const updatedUser = await pool.query('SELECT extractions_used FROM users WHERE id = $1', [userId]);
+    const used = updatedUser.rows[0]?.extractions_used || 0;
+    const remaining = isPro ? 999 : Math.max(0, FREE_LIMIT - used);
+
     res.json({ ...parsed, isPro, remaining });
-
-  } catch (e) {
-    res.status(500).json({ error: 'Extraction failed. Try again.' });
+  } catch(e) {
+    res.status(500).json({ error: 'Extraction failed' });
   }
-});
-
-// ---- AUTH: REGISTER ----
-app.post('/auth/register', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-
-  try {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) return res.status(400).json({ error: error.message });
-
-    // Create user profile
-    await supabase.from('users').insert({
-      id: data.user.id,
-      email: data.user.email,
-      is_pro: false
-    });
-
-    res.json({ success: true, token: data.session?.access_token, user: { email: data.user.email } });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ---- AUTH: LOGIN ----
-app.post('/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return res.status(400).json({ error: error.message });
-
-    const { data: profile } = await supabase
-      .from('users')
-      .select('is_pro')
-      .eq('id', data.user.id)
-      .single();
-
-    res.json({
-      success: true,
-      token: data.session.access_token,
-      user: { email: data.user.email, isPro: profile?.is_pro || false }
-    });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ---- AUTH: STATUS ----
-app.post('/status', async (req, res) => {
-  const { token } = req.body;
-  const ip = getIP(req);
-  const user = await getUserFromToken(token);
-  const isPro = user?.isPro || false;
-  const used = freeUsage[ip] || 0;
-  const remaining = isPro ? 999 : Math.max(0, FREE_LIMIT - used);
-  res.json({ isPro, remaining, used, email: user?.email || null });
 });
 
 // ---- STRIPE CHECKOUT ----
-app.post('/create-checkout', async (req, res) => {
-  const { plan, token } = req.body;
+app.post('/create-checkout', authMiddleware, async (req, res) => {
+  const { plan } = req.body;
   const isAnnual = plan === 'annual';
-  const user = await getUserFromToken(token);
+  const email = req.user?.email;
 
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
-      customer_email: user?.email || undefined,
+      customer_email: email,
       line_items: [{
-        price: isAnnual
-          ? 'price_1TPQcmCsPE5vWH8Z5ymSC5RO'
-          : 'price_1TPQbTCsPE5vWH8ZgevVEBf4',
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: isAnnual ? 'Sharp-Stack Pro — Annual' : 'Sharp-Stack Pro — Monthly',
+            description: 'Unlimited book extractions + weekly curated drops'
+          },
+          unit_amount: isAnnual ? 7900 : 900,
+          recurring: { interval: isAnnual ? 'year' : 'month' }
+        },
         quantity: 1
       }],
-      metadata: { user_id: user?.id || '' },
       success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.origin}/`
     });
     res.json({ url: session.url });
-  } catch (e) {
+  } catch(e) {
     res.status(500).json({ error: e.message });
   }
 });
 
 // ---- VERIFY PAYMENT ----
-app.post('/verify-payment', async (req, res) => {
+app.post('/verify-payment', authMiddleware, async (req, res) => {
   const { session_id } = req.body;
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     if (session.payment_status === 'paid' || session.status === 'complete') {
-      const userId = session.metadata?.user_id;
-      if (userId) {
-        await supabase.from('users').update({
-          is_pro: true,
-          stripe_customer_id: session.customer,
-          stripe_subscription_id: session.subscription
-        }).eq('id', userId);
+      if (req.user) {
+        await pool.query(
+          'UPDATE users SET is_pro = TRUE, stripe_customer_id = $1, stripe_subscription_id = $2 WHERE id = $3',
+          [session.customer, session.subscription, req.user.id]
+        );
       }
       res.json({ success: true });
     } else {
       res.json({ success: false });
     }
-  } catch (e) {
+  } catch(e) {
     res.status(500).json({ error: e.message });
   }
 });
 
+// ---- EMAIL CAPTURE ----
+app.post('/save-email', async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) return res.status(400).json({ error: 'Invalid email' });
+  console.log(`Email captured: ${email}`);
+  res.json({ success: true });
+});
+
 const PORT = process.env.PORT || 3000;
-// ---- ADMIN MIDDLEWARE ----
-async function isAdmin(req, res, next) {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const { data: { user } } = await supabase.auth.getUser(token);
-    if (user?.email !== 'amadejgkladnik@gmail.com') return res.status(403).json({ error: 'Forbidden' });
-    req.adminUser = user;
-    next();
-  } catch (e) { res.status(401).json({ error: 'Unauthorized' }); }
-}
-
-// ---- ADMIN: GET ALL USERS ----
-app.get('/admin/users', isAdmin, async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ users: data });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ---- ADMIN: TOGGLE PRO ----
-app.post('/admin/toggle-pro', isAdmin, async (req, res) => {
-  const { userId, isPro } = req.body;
-  try {
-    const { error } = await supabase.from('users').update({ is_pro: isPro }).eq('id', userId);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ---- ADMIN: RESET PASSWORD ----
-app.post('/admin/reset-password', isAdmin, async (req, res) => {
-  const { userId, password } = req.body;
-  try {
-    const { error } = await supabase.auth.admin.updateUserById(userId, { password });
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ---- ADMIN: DELETE USER ----
-app.post('/admin/delete-user', isAdmin, async (req, res) => {
-  const { userId } = req.body;
-  try {
-    await supabase.from('users').delete().eq('id', userId);
-    const { error } = await supabase.auth.admin.deleteUser(userId);
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
 app.listen(PORT, () => console.log(`Sharp-Stack running at http://localhost:${PORT}`));
