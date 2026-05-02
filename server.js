@@ -257,3 +257,82 @@ app.post('/save-email', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Sharp-Stack running at http://localhost:${PORT}`));
+
+// ---- ADMIN MIDDLEWARE ----
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'sharpstack-admin-2026';
+
+function adminAuth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET + '-admin');
+    if (decoded.role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
+    next();
+  } catch(e) {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+}
+
+// ---- ADMIN LOGIN ----
+app.post('/admin/login', (req, res) => {
+  const { password } = req.body;
+  if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Wrong password' });
+  const token = jwt.sign({ role: 'admin' }, JWT_SECRET + '-admin', { expiresIn: '24h' });
+  res.json({ token });
+});
+
+// ---- ADMIN STATS ----
+app.get('/admin/stats', adminAuth, async (req, res) => {
+  try {
+    const total = await pool.query('SELECT COUNT(*) FROM users');
+    const pro = await pool.query('SELECT COUNT(*) FROM users WHERE is_pro = TRUE');
+    const free = await pool.query('SELECT COUNT(*) FROM users WHERE is_pro = FALSE');
+    const extractions = await pool.query('SELECT SUM(extractions_used) FROM users');
+    const recent = await pool.query('SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL \'7 days\'');
+
+    res.json({
+      totalUsers: parseInt(total.rows[0].count),
+      proUsers: parseInt(pro.rows[0].count),
+      freeUsers: parseInt(free.rows[0].count),
+      mrr: parseInt(pro.rows[0].count) * 9,
+      totalExtractions: parseInt(extractions.rows[0].sum) || 0,
+      newThisWeek: parseInt(recent.rows[0].count)
+    });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ---- ADMIN USERS ----
+app.get('/admin/users', adminAuth, async (req, res) => {
+  try {
+    const { search, page = 1 } = req.query;
+    const limit = 20;
+    const offset = (page - 1) * limit;
+
+    let query = 'SELECT id, email, is_pro, extractions_used, created_at FROM users';
+    let params = [];
+
+    if (search) {
+      query += ' WHERE email ILIKE $1';
+      params.push(`%${search}%`);
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+    const result = await pool.query(query, params);
+    res.json({ users: result.rows });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ---- ADMIN GRANT PRO ----
+app.post('/admin/grant-pro', adminAuth, async (req, res) => {
+  const { userId, isPro } = req.body;
+  try {
+    await pool.query('UPDATE users SET is_pro = $1 WHERE id = $2', [isPro, userId]);
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
