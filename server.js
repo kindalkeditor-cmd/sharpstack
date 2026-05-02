@@ -259,7 +259,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Sharp-Stack running at http://localhost:${PORT}`));
 
 // ---- ADMIN MIDDLEWARE ----
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'sharpstack-admin-2026';
+const ADMIN_PASSWORD = process.env.SS_ADMIN_PASS || 'sharpstack-admin-2026';
 
 function adminAuth(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
