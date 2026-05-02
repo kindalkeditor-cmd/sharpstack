@@ -1,24 +1,20 @@
 {
   "name": "sharpstack",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.3.2",
-    "helmet": "^8.1.0",
-    "node-fetch": "^2.7.0",
-    "nodemailer": "^8.0.5",
-    "stripe": "^22.0.2"
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "express-rate-limit": "^6.0.0",
+    "helmet": "^6.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "node-fetch": "^2.6.7",
+    "pg": "^8.11.0",
+    "stripe": "^12.0.0"
   }
 }
