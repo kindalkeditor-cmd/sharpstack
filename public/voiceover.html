@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharp-Stack — Voiceover Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#f5f5f7;--surface:#fff;--border:#d2d2d7;--black:#1d1d1f;--mid:#6e6e73;--gold:#b8892a;--gold-bg:#fdf6e8;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--black);padding:40px 24px;}
+
+nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;}
+.logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;}
+.logo em{font-style:normal;color:var(--gold);}
+.back{font-size:0.78rem;color:var(--mid);text-decoration:none;}
+.back:hover{color:var(--black);}
+
+.wrap{max-width:720px;margin:0 auto;}
+h1{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;letter-spacing:-1px;margin-bottom:8px;}
+h1 em{font-style:italic;color:var(--gold);}
+.sub{font-size:0.9rem;color:var(--mid);margin-bottom:36px;font-weight:300;}
+
+.books{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:28px;}
+.book{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color 0.15s,transform 0.15s;}
+.book:hover{transform:translateY(-2px);border-color:#bbb;}
+.book.active{border:2px solid var(--gold);background:var(--gold-bg);}
+.book-title{font-size:0.82rem;font-weight:500;margin-bottom:3px;}
+.book-author{font-size:0.68rem;color:var(--mid);}
+
+.script-box{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:24px;min-height:100px;}
+.script-box p{font-size:0.85rem;line-height:1.8;color:var(--black);white-space:pre-line;}
+.script-placeholder{font-size:0.85rem;color:var(--mid);}
+
+.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:24px;}
+select{background:var(--surface);border:0.5px solid var(--border);border-radius:20px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);outline:none;cursor:pointer;}
+.gen-btn{background:var(--black);color:#fff;border:none;border-radius:20px;padding:11px 28px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:opacity 0.2s;}
+.gen-btn:hover{opacity:0.75;}
+.gen-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.status{font-size:0.78rem;color:var(--mid);}
+
+.audio-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:20px 22px;display:none;}
+.audio-label{font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+audio{width:100%;margin-bottom:14px;}
+.dl-btn{display:inline-flex;align-items:center;gap:8px;background:var(--black);color:#fff;border:none;border-radius:20px;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer;text-decoration:none;transition:opacity 0.2s;}
+.dl-btn:hover{opacity:0.75;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="logo">Sharp<em>-Stack</em></div>
+    <a href="/" class="back">← Back to site</a>
+  </nav>
+
+  <h1>Voiceover <em>Generator.</em></h1>
+  <p class="sub">Select a book, pick a voice, generate and download your MP3.</p>
+
+  <div class="books" id="books"></div>
+
+  <div class="script-box" id="scriptBox">
+    <p class="script-placeholder">Select a book above to see the script.</p>
+  </div>
+
+  <div class="controls">
+    <select id="voiceSelect">
+      <option value="pNInz6obpgDQGcFmaJgB">Adam — Professional</option>
+      <option value="ErXwobaYiN019PkySvjV">Antoni — Warm</option>
+      <option value="VR6AewLTigWG4xSOukaG">Arnold — Authoritative</option>
+      <option value="yoZ06aMxZJJ28mfd3POQ">Sam — Clear</option>
+    </select>
+    <button class="gen-btn" id="genBtn" onclick="generate()" disabled>Generate voiceover →</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="audio-card" id="audioCard">
+    <div class="audio-label">Your voiceover</div>
+    <audio id="player" controls></audio>
+    <br>
+    <a class="dl-btn" id="dlBtn" download>↓ Download MP3</a>
+  </div>
+</div>
+
+<script>
+const scripts = [
+  { book: 'Atomic Habits', author: 'James Clear', text: `Most people never finish Atomic Habits.\nHere's the one idea that matters.\n\nYou don't rise to your goals.\nYou fall to your systems.\n\nYour goal is not the problem.\nYour system is.\n\nFix the system. Everything else follows.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
+  { book: '$100M Offers', author: 'Alex Hormozi', text: `I extracted $100M Offers so you don't have to.\n\nThe one idea:\n\nMake your offer so good\npeople feel stupid saying no.\n\nNot a better product.\nNot a lower price.\nA better offer.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
+  { book: 'Never Split the Difference', author: 'Chris Voss', text: `The most powerful negotiation technique ever discovered.\n\nMirror the last three words they said.\nThen stay silent.\n\nThat's it.\nPeople can't stop talking.\nThe more they talk, the more you win.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
+  { book: 'The E-Myth Revisited', author: 'Michael Gerber', text: `If your business depends on you,\nyou don't own a business.\nYou own a job.\n\nMichael Gerber figured this out in 1986.\nMost entrepreneurs still haven't learned it.\n\nBuild systems. Not dependencies.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
+  { book: 'How to Win Friends', author: 'Dale Carnegie', text: `Dale Carnegie figured this out in 1936.\n\nPeople don't care how much you know\nuntil they know how much you care.\n\nStop talking about yourself.\nAsk questions.\nListen more than you speak.\n\n90 years later. Still the most powerful people skill alive.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
+  { book: 'Think and Grow Rich', author: 'Napoleon Hill', text: `Napoleon Hill studied 500 of the most successful people alive.\n\nHis conclusion after 20 years:\n\nSuccess is 80 percent mindset.\n20 percent mechanics.\n\nNot talent. Not luck. Not connections.\n\nA burning, obsessive desire.\nThat's the starting point of everything.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
+  { book: 'Shoe Dog', author: 'Phil Knight', text: `Phil Knight started Nike selling shoes from the back of his car.\n\nNo office. No brand. No investors.\n\nJust belief and a folding table.\n\nHis advice after building a 30 billion dollar company:\n\nDon't stop.\nDon't even think about it.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` }
+];
+
+let selected = null;
+
+const booksEl = document.getElementById('books');
+scripts.forEach((s, i) => {
+  const el = document.createElement('div');
+  el.className = 'book';
+  el.innerHTML = `<div class="book-title">${s.book}</div><div class="book-author">${s.author}</div>`;
+  el.onclick = () => {
+    selected = i;
+    document.querySelectorAll('.book').forEach((b, j) => b.classList.toggle('active', j === i));
+    document.getElementById('scriptBox').innerHTML = `<p>${s.text}</p>`;
+    document.getElementById('genBtn').disabled = false;
+    document.getElementById('audioCard').style.display = 'none';
+    document.getElementById('status').textContent = '';
+  };
+  booksEl.appendChild(el);
+});
+
+async function generate() {
+  if (selected === null) return;
+  const btn = document.getElementById('genBtn');
+  const status = document.getElementById('status');
+  btn.disabled = true;
+  status.textContent = 'Generating...';
+
+  try {
+    const res = await fetch('/generate-voiceover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: scripts[selected].text,
+        voiceId: document.getElementById('voiceSelect').value
+      })
+    });
+
+    if (!res.ok) throw new Error('Generation failed');
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const name = scripts[selected].book.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+
+    document.getElementById('player').src = url;
+    document.getElementById('dlBtn').href = url;
+    document.getElementById('dlBtn').download = `sharpstack-${name}.mp3`;
+    document.getElementById('audioCard').style.display = 'block';
+    status.textContent = '✓ Ready';
+  } catch(e) {
+    status.textContent = 'Error — try again';
+  }
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>
