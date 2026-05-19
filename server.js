@@ -185,9 +185,14 @@ app.post('/generate-voiceover', async (req, res) => {
       })
     });
 
-    if (!response.ok) throw new Error('ElevenLabs error ' + response.status);
-    const buffer = await response.buffer();
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error('ElevenLabs error ' + response.status + ': ' + errText);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     res.set('Content-Type', 'audio/mpeg');
+    res.set('Content-Length', buffer.length);
     res.send(buffer);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
