@@ -181,7 +181,7 @@ app.post('/generate-voiceover', async (req, res) => {
       },
       body: JSON.stringify({
         text,
-        model_id: 'eleven_monolingual_v1',
+        model_id: 'eleven_turbo_v2_5',
         voice_settings: { stability: 0.5, similarity_boost: 0.75 }
       })
     });
@@ -195,7 +195,10 @@ app.post('/generate-voiceover', async (req, res) => {
     res.set('Content-Type', 'audio/mpeg');
     res.set('Content-Length', buffer.length);
     res.send(buffer);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    console.error('ElevenLabs error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ---- STRIPE ----
