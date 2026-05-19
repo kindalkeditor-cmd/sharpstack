@@ -12,13 +12,11 @@ const { Pool } = require('pg');
 
 const app = express();
 
-// Database
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Init database tables
 async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -36,39 +34,40 @@ async function initDB() {
 }
 initDB();
 
-// Security
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rate limiting
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
 const extractLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20 });
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sharpstack-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'sharpstack-secret-key';
 const FREE_LIMIT = 3;
-const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
+const ADMIN_PASSWORD = process.env.SS_ADMIN_PASS || 'sharpstack-admin-2026';
 
-// ---- AUTH MIDDLEWARE ----
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) { req.user = null; return next(); }
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch(e) {
-    req.user = null;
-    next();
-  }
+  try { req.user = jwt.verify(token, JWT_SECRET); next(); }
+  catch(e) { req.user = null; next(); }
 }
 
-// ---- SIGNUP ----
+function adminAuth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET + '-admin');
+    if (decoded.role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
+    next();
+  } catch(e) { res.status(401).json({ error: 'Unauthorized' }); }
+}
+
+// ---- AUTH ----
 app.post('/auth/signup', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
-
   try {
     const hashed = await bcrypt.hash(password, 10);
     const result = await pool.query(
@@ -84,27 +83,20 @@ app.post('/auth/signup', async (req, res) => {
   }
 });
 
-// ---- LOGIN ----
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
     const user = result.rows[0];
     if (!user) return res.status(400).json({ error: 'Invalid email or password' });
-
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: 'Invalid email or password' });
-
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { email: user.email, isPro: user.is_pro, extractionsUsed: user.extractions_used } });
-  } catch(e) {
-    res.status(500).json({ error: 'Login failed' });
-  }
+  } catch(e) { res.status(500).json({ error: 'Login failed' }); }
 });
 
-// ---- GET USER STATUS ----
 app.get('/auth/me', authMiddleware, async (req, res) => {
   if (!req.user) return res.json({ loggedIn: false });
   try {
@@ -118,31 +110,21 @@ app.get('/auth/me', authMiddleware, async (req, res) => {
       extractionsUsed: user.extractions_used,
       remaining: user.is_pro ? 999 : Math.max(0, FREE_LIMIT - user.extractions_used)
     });
-  } catch(e) {
-    res.json({ loggedIn: false });
-  }
+  } catch(e) { res.json({ loggedIn: false }); }
 });
 
 // ---- EXTRACT ----
 app.post('/extract', extractLimiter, authMiddleware, async (req, res) => {
   const { title } = req.body;
   if (!title) return res.status(400).json({ error: 'No title provided' });
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
 
-  let isPro = false;
-  let userId = null;
+  const result = await pool.query('SELECT is_pro, extractions_used FROM users WHERE id = $1', [req.user.id]);
+  const user = result.rows[0];
+  if (!user) return res.status(401).json({ error: 'User not found' });
 
-  if (req.user) {
-    const result = await pool.query('SELECT is_pro, extractions_used FROM users WHERE id = $1', [req.user.id]);
-    const user = result.rows[0];
-    if (!user) return res.status(401).json({ error: 'User not found' });
-    isPro = user.is_pro;
-    userId = req.user.id;
-
-    if (!isPro && user.extractions_used >= FREE_LIMIT) {
-      return res.status(403).json({ error: 'free_limit_reached' });
-    }
-  } else {
-    return res.status(401).json({ error: 'login_required' });
+  if (!user.is_pro && user.extractions_used >= FREE_LIMIT) {
+    return res.status(403).json({ error: 'free_limit_reached' });
   }
 
   const prompt = `You are a brutal book distiller for entrepreneurs. Extract ONLY actionable insights. No fluff, no stories.
@@ -162,16 +144,8 @@ Return ONLY valid JSON, no markdown:
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
     });
 
     const data = await response.json();
@@ -179,39 +153,58 @@ Return ONLY valid JSON, no markdown:
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
 
-    // Increment usage
-    if (!isPro) {
-      await pool.query('UPDATE users SET extractions_used = extractions_used + 1 WHERE id = $1', [userId]);
+    if (!user.is_pro) {
+      await pool.query('UPDATE users SET extractions_used = extractions_used + 1 WHERE id = $1', [req.user.id]);
     }
 
-    const updatedUser = await pool.query('SELECT extractions_used FROM users WHERE id = $1', [userId]);
-    const used = updatedUser.rows[0]?.extractions_used || 0;
-    const remaining = isPro ? 999 : Math.max(0, FREE_LIMIT - used);
+    const updated = await pool.query('SELECT extractions_used FROM users WHERE id = $1', [req.user.id]);
+    const used = updated.rows[0]?.extractions_used || 0;
+    const remaining = user.is_pro ? 999 : Math.max(0, FREE_LIMIT - used);
 
-    res.json({ ...parsed, isPro, remaining });
-  } catch(e) {
-    res.status(500).json({ error: 'Extraction failed' });
-  }
+    res.json({ ...parsed, isPro: user.is_pro, remaining });
+  } catch(e) { res.status(500).json({ error: 'Extraction failed' }); }
 });
 
-// ---- STRIPE CHECKOUT ----
+// ---- ELEVENLABS PROXY ----
+app.post('/generate-voiceover', async (req, res) => {
+  const { text, voiceId } = req.body;
+  if (!text || !voiceId) return res.status(400).json({ error: 'Missing text or voiceId' });
+
+  try {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': process.env.ELEVENLABS_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+      })
+    });
+
+    if (!response.ok) throw new Error('ElevenLabs error ' + response.status);
+    const buffer = await response.buffer();
+    res.set('Content-Type', 'audio/mpeg');
+    res.send(buffer);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- STRIPE ----
 app.post('/create-checkout', authMiddleware, async (req, res) => {
   const { plan } = req.body;
   const isAnnual = plan === 'annual';
-  const email = req.user?.email;
-
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
-      customer_email: email,
+      customer_email: req.user?.email,
       line_items: [{
         price_data: {
           currency: 'usd',
-          product_data: {
-            name: isAnnual ? 'Sharp-Stack Pro — Annual' : 'Sharp-Stack Pro — Monthly',
-            description: 'Unlimited book extractions + weekly curated drops'
-          },
+          product_data: { name: isAnnual ? 'Sharp-Stack Pro — Annual' : 'Sharp-Stack Pro — Monthly', description: 'Unlimited book extractions + weekly curated drops' },
           unit_amount: isAnnual ? 7900 : 900,
           recurring: { interval: isAnnual ? 'year' : 'month' }
         },
@@ -221,12 +214,9 @@ app.post('/create-checkout', authMiddleware, async (req, res) => {
       cancel_url: `${req.headers.origin}/`
     });
     res.json({ url: session.url });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ---- VERIFY PAYMENT ----
 app.post('/verify-payment', authMiddleware, async (req, res) => {
   const { session_id } = req.body;
   try {
@@ -239,15 +229,10 @@ app.post('/verify-payment', authMiddleware, async (req, res) => {
         );
       }
       res.json({ success: true });
-    } else {
-      res.json({ success: false });
-    }
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+    } else { res.json({ success: false }); }
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ---- EMAIL CAPTURE ----
 app.post('/save-email', async (req, res) => {
   const { email } = req.body;
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'Invalid email' });
@@ -255,25 +240,7 @@ app.post('/save-email', async (req, res) => {
   res.json({ success: true });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Sharp-Stack running at http://localhost:${PORT}`));
-
-// ---- ADMIN MIDDLEWARE ----
-const ADMIN_PASSWORD = process.env.SS_ADMIN_PASS || 'sharpstack-admin-2026';
-
-function adminAuth(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET + '-admin');
-    if (decoded.role !== 'admin') return res.status(401).json({ error: 'Unauthorized' });
-    next();
-  } catch(e) {
-    res.status(401).json({ error: 'Unauthorized' });
-  }
-}
-
-// ---- ADMIN LOGIN ----
+// ---- ADMIN ----
 app.post('/admin/login', (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Wrong password' });
@@ -281,15 +248,13 @@ app.post('/admin/login', (req, res) => {
   res.json({ token });
 });
 
-// ---- ADMIN STATS ----
 app.get('/admin/stats', adminAuth, async (req, res) => {
   try {
     const total = await pool.query('SELECT COUNT(*) FROM users');
     const pro = await pool.query('SELECT COUNT(*) FROM users WHERE is_pro = TRUE');
     const free = await pool.query('SELECT COUNT(*) FROM users WHERE is_pro = FALSE');
     const extractions = await pool.query('SELECT SUM(extractions_used) FROM users');
-    const recent = await pool.query('SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL \'7 days\'');
-
+    const recent = await pool.query("SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '7 days'");
     res.json({
       totalUsers: parseInt(total.rows[0].count),
       proUsers: parseInt(pro.rows[0].count),
@@ -298,41 +263,30 @@ app.get('/admin/stats', adminAuth, async (req, res) => {
       totalExtractions: parseInt(extractions.rows[0].sum) || 0,
       newThisWeek: parseInt(recent.rows[0].count)
     });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ---- ADMIN USERS ----
 app.get('/admin/users', adminAuth, async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
     const limit = 20;
     const offset = (page - 1) * limit;
-
     let query = 'SELECT id, email, is_pro, extractions_used, created_at FROM users';
     let params = [];
-
-    if (search) {
-      query += ' WHERE email ILIKE $1';
-      params.push(`%${search}%`);
-    }
-
+    if (search) { query += ' WHERE email ILIKE $1'; params.push(`%${search}%`); }
     query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
     const result = await pool.query(query, params);
     res.json({ users: result.rows });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ---- ADMIN GRANT PRO ----
 app.post('/admin/grant-pro', adminAuth, async (req, res) => {
   const { userId, isPro } = req.body;
   try {
     await pool.query('UPDATE users SET is_pro = $1 WHERE id = $2', [isPro, userId]);
     res.json({ success: true });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Sharp-Stack running at http://localhost:${PORT}`));
