@@ -225,10 +225,11 @@ audio{width:100%;margin-bottom:10px;}
           <div class="voice-row">
             <label>Voice</label>
             <select id="voVoice">
+              <option value="onwK4e9ZLuTAKqWW03F9">Daniel — Deep &amp; Authoritative</option>
+              <option value="ErXwobaYiN019PkySvjV">Antoni — Warm &amp; Natural</option>
               <option value="pNInz6obpgDQGcFmaJgB">Adam — Professional</option>
-              <option value="ErXwobaYiN019PkySvjV">Antoni — Warm</option>
-              <option value="VR6AewLTigWG4xSOukaG">Arnold — Authoritative</option>
-              <option value="yoZ06aMxZJJ28mfd3POQ">Sam — Clear</option>
+              <option value="VR6AewLTigWG4xSOukaG">Arnold — Powerful</option>
+              <option value="yoZ06aMxZJJ28mfd3POQ">Sam — Clear &amp; Crisp</option>
             </select>
           </div>
           <button class="gen-btn" id="voGenBtn" onclick="generateVoiceover()" disabled>Generate voiceover →</button>
@@ -260,13 +261,166 @@ let voSelected = null;
 let allUsers = [];
 
 const voScripts = [
-  { book: 'Atomic Habits', author: 'James Clear', text: `Most people never finish Atomic Habits.\nHere's the one idea that matters.\n\nYou don't rise to your goals.\nYou fall to your systems.\n\nYour goal is not the problem.\nYour system is.\n\nFix the system. Everything else follows.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
-  { book: '$100M Offers', author: 'Alex Hormozi', text: `I extracted $100M Offers so you don't have to.\n\nThe one idea:\n\nMake your offer so good\npeople feel stupid saying no.\n\nNot a better product.\nNot a lower price.\nA better offer.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
-  { book: 'Never Split the Difference', author: 'Chris Voss', text: `The most powerful negotiation technique ever discovered.\n\nMirror the last three words they said.\nThen stay silent.\n\nThat's it.\nPeople can't stop talking.\nThe more they talk, the more you win.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
-  { book: 'The E-Myth Revisited', author: 'Michael Gerber', text: `If your business depends on you,\nyou don't own a business.\nYou own a job.\n\nBuild systems. Not dependencies.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
-  { book: 'How to Win Friends', author: 'Dale Carnegie', text: `Dale Carnegie figured this out in 1936.\n\nPeople don't care how much you know\nuntil they know how much you care.\n\nStop talking about yourself.\nAsk questions.\nListen more than you speak.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
-  { book: 'Think and Grow Rich', author: 'Napoleon Hill', text: `Napoleon Hill studied 500 of the most successful people.\n\nSuccess is 80 percent mindset.\n20 percent mechanics.\n\nA burning, obsessive desire.\nThat's the starting point of everything.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` },
-  { book: 'Shoe Dog', author: 'Phil Knight', text: `Phil Knight started Nike from the back of his car.\n\nNo office. No brand. No investors.\n\nJust belief and a folding table.\n\nDon't stop.\nDon't even think about it.\n\nFull extract at sharp-stack dot com.\nFirst three books free.` }
+  {
+    book: 'Atomic Habits',
+    author: 'James Clear',
+    text: `Most people never finish Atomic Habits.
+
+Here is the one idea that matters.
+
+You do not rise to your goals.
+
+You fall to your systems.
+
+Read that again.
+
+Your goal... is not the problem.
+
+Your system is.
+
+Fix the system.
+
+Everything else follows.
+
+Full extract at sharp dash stack dot com.
+
+First three books, completely free.`
+  },
+  {
+    book: '$100M Offers',
+    author: 'Alex Hormozi',
+    text: `I extracted one hundred million dollar offers... so you don't have to.
+
+The one idea that changes everything:
+
+Make your offer so good...
+
+that people feel stupid saying no.
+
+Not a better product.
+Not a lower price.
+
+A better offer.
+
+That is the whole game.
+
+Full extract at sharp dash stack dot com.
+
+First three books, completely free.`
+  },
+  {
+    book: 'Never Split the Difference',
+    author: 'Chris Voss',
+    text: `The most powerful negotiation technique ever discovered.
+
+Mirror the last three words they said.
+
+Then... stay silent.
+
+That is it.
+
+People cannot stop talking.
+
+The more they talk... the more you learn.
+
+The more you learn... the more you win.
+
+Full extract at sharp dash stack dot com.
+
+First three books, completely free.`
+  },
+  {
+    book: 'The E-Myth Revisited',
+    author: 'Michael Gerber',
+    text: `If your business depends on you...
+
+you do not own a business.
+
+You own a job.
+
+Michael Gerber figured this out in 1986.
+
+Most entrepreneurs... still have not learned it.
+
+Stop working in your business.
+
+Start working on it.
+
+Build systems. Not dependencies.
+
+Full extract at sharp dash stack dot com.
+
+First three books, completely free.`
+  },
+  {
+    book: 'How to Win Friends',
+    author: 'Dale Carnegie',
+    text: `Dale Carnegie figured this out in nineteen thirty six.
+
+People do not care how much you know...
+
+until they know how much you care.
+
+Stop talking about yourself.
+
+Ask questions.
+
+Listen... more than you speak.
+
+Ninety years later.
+
+Still the most powerful people skill alive.
+
+Full extract at sharp dash stack dot com.
+
+First three books, completely free.`
+  },
+  {
+    book: 'Think and Grow Rich',
+    author: 'Napoleon Hill',
+    text: `Napoleon Hill studied five hundred of the most successful people alive.
+
+His conclusion... after twenty years of research:
+
+Success is eighty percent mindset.
+
+Twenty percent mechanics.
+
+Not talent.
+Not luck.
+Not connections.
+
+A burning... obsessive... desire.
+
+That is the starting point of everything.
+
+Full extract at sharp dash stack dot com.
+
+First three books, completely free.`
+  },
+  {
+    book: 'Shoe Dog',
+    author: 'Phil Knight',
+    text: `Phil Knight started Nike...
+
+selling shoes from the back of his car.
+
+No office.
+No brand.
+No investors.
+
+Just belief... and a folding table.
+
+His advice... after building a thirty billion dollar company:
+
+Do not stop.
+
+Do not even think about it.
+
+Full extract at sharp dash stack dot com.
+
+First three books, completely free.`
+  }
 ];
 
 if (adminToken) showAdmin();
@@ -442,7 +596,7 @@ async function generateVoiceover() {
   try {
     const res = await fetch('/generate-voiceover', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
       body: JSON.stringify({
         text: voScripts[voSelected].text,
         voiceId: document.getElementById('voVoice').value
