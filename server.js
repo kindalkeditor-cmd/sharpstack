@@ -167,7 +167,7 @@ Return ONLY valid JSON, no markdown:
 });
 
 // ---- ELEVENLABS PROXY ----
-app.post('/generate-voiceover', async (req, res) => {
+app.post('/generate-voiceover', adminAuth, async (req, res) => {
   const { text, voiceId } = req.body;
   if (!text || !voiceId) return res.status(400).json({ error: 'Missing text or voiceId' });
 
@@ -182,7 +182,7 @@ app.post('/generate-voiceover', async (req, res) => {
       body: JSON.stringify({
         text,
         model_id: 'eleven_turbo_v2_5',
-        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+        voice_settings: { stability: 0.3, similarity_boost: 0.85, style: 0.5, use_speaker_boost: true }
       })
     });
 
