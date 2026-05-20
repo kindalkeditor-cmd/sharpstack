@@ -413,7 +413,7 @@ function updateUI(user) {
     signupBtn.style.display = 'none';
     logoutBtn.style.display = 'block';
     navUser.style.display = 'block';
-    navUser.textContent = user.email;
+    navUser.textContent = '';
     if (user.isPro) {
       proBadge.style.display = 'block';
       usageBar.style.display = 'none';
