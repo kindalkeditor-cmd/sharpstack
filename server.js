@@ -1,5 +1,16 @@
 require('dotenv').config();
+
+// FFmpeg setup using Node package
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+ffmpeg.setFfprobePath(ffmpegInstaller.path.replace('ffmpeg', 'ffprobe'));
 const express = require('express');
+// FFmpeg setup
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffprobePath = require('@ffprobe-installer/ffprobe').path;
+process.env.PATH = `${require('path').dirname(ffmpegPath)}:${process.env.PATH}`;
+process.env.PATH = `${require('path').dirname(ffprobePath)}:${process.env.PATH}`;
 const multer = require('multer');
 const { execSync, exec } = require('child_process');
 const fs = require('fs');
@@ -318,42 +329,69 @@ app.post('/generate-video', adminAuth, upload.fields([
   const outputPath = `${os.tmpdir()}/sharpstack-output-${Date.now()}.mp4`;
 
   try {
-    // Get audio duration
-    const audioDuration = execSync(
-      `ffprobe -i "${audioPath}" -show_entries format=duration -v quiet -of csv="p=0"`
-    ).toString().trim();
-
-    const duration = parseFloat(audioDuration);
-
-    // Get video duration
-    const videoDuration = execSync(
-      `ffprobe -i "${videoPath}" -show_entries format=duration -v quiet -of csv="p=0"`
-    ).toString().trim();
-
-    const vDuration = parseFloat(videoDuration);
-
-    // Calculate how many loops needed
-    const loops = Math.ceil(duration / vDuration);
-
-    // Build drawtext filter for hook
-    const safeHook = (hookText || '').replace(/'/g, "\'").replace(/:/g, "\:");
-    const drawtextFilter = safeHook
-      ? `drawtext=text='${safeHook}':fontsize=48:fontcolor=white:fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(t,0,2.5)':box=1:boxcolor=black@0.7:boxborderw=20`
-      : 'null';
-
-    // FFmpeg command: loop video, mix with audio, add hook text, trim to audio length
-    const cmd = `ffmpeg -y -stream_loop ${loops} -i "${videoPath}" -i "${audioPath}" -filter_complex "[0:v]${drawtextFilter}[v]" -map "[v]" -map 1:a -t ${duration} -c:v libx264 -preset fast -crf 23 -c:a aac -shortest "${outputPath}"`;
-
-    await new Promise((resolve, reject) => {
-      exec(cmd, (error, stdout, stderr) => {
-        if (error) reject(new Error(stderr));
-        else resolve();
+    // Get audio duration using fluent-ffmpeg
+    const getAudioDuration = () => new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(audioPath, (err, metadata) => {
+        if (err) reject(err);
+        else resolve(metadata.format.duration);
       });
     });
 
-    // Send the file
-    res.download(outputPath, 'sharpstack-video.mp4', () => {
-      // Cleanup temp files
+    const getVideoDuration = () => new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(videoPath, (err, metadata) => {
+        if (err) reject(err);
+        else resolve(metadata.format.duration);
+      });
+    });
+
+    const audioDuration = await getAudioDuration();
+    const videoDuration = await getVideoDuration();
+    const loops = Math.ceil(audioDuration / videoDuration);
+
+    // Build the video using fluent-ffmpeg
+    await new Promise((resolve, reject) => {
+      let cmd = ffmpeg()
+        .input(videoPath)
+        .inputOptions([`-stream_loop ${loops}`])
+        .input(audioPath)
+        .outputOptions([
+          '-c:v libx264',
+          '-preset fast',
+          '-crf 23',
+          '-c:a aac',
+          `-t ${audioDuration}`,
+          '-shortest'
+        ]);
+
+      // Add hook text overlay if provided
+      if (hookText && hookText.trim()) {
+        const safeHook = hookText.replace(/'/g, '').replace(/:/g, ' ').trim();
+        cmd = cmd.videoFilters([
+          {
+            filter: 'drawtext',
+            options: {
+              text: safeHook,
+              fontsize: 52,
+              fontcolor: 'white',
+              x: '(w-text_w)/2',
+              y: '(h-text_h)/2',
+              enable: 'between(t,0,2.5)',
+              box: 1,
+              boxcolor: 'black@0.75',
+              boxborderw: 20
+            }
+          }
+        ]);
+      }
+
+      cmd
+        .output(outputPath)
+        .on('end', resolve)
+        .on('error', reject)
+        .run();
+    });
+
+    res.download(outputPath, 'sharpstack-tiktok.mp4', () => {
       try { fs.unlinkSync(videoPath); } catch(e) {}
       try { fs.unlinkSync(audioPath); } catch(e) {}
       try { fs.unlinkSync(outputPath); } catch(e) {}
