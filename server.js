@@ -1,5 +1,9 @@
 require('dotenv').config();
 const express = require('express');
+const multer = require('multer');
+const { execSync, exec } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -295,6 +299,72 @@ app.post('/admin/grant-pro', adminAuth, async (req, res) => {
     await pool.query('UPDATE users SET is_pro = $1 WHERE id = $2', [isPro, userId]);
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- VIDEO STUDIO ----
+const upload = multer({ dest: os.tmpdir() });
+
+app.post('/generate-video', adminAuth, upload.fields([
+  { name: 'video', maxCount: 1 },
+  { name: 'audio', maxCount: 1 }
+]), async (req, res) => {
+  const { hookText } = req.body;
+  if (!req.files?.video || !req.files?.audio) {
+    return res.status(400).json({ error: 'Video and audio files required' });
+  }
+
+  const videoPath = req.files.video[0].path;
+  const audioPath = req.files.audio[0].path;
+  const outputPath = `${os.tmpdir()}/sharpstack-output-${Date.now()}.mp4`;
+
+  try {
+    // Get audio duration
+    const audioDuration = execSync(
+      `ffprobe -i "${audioPath}" -show_entries format=duration -v quiet -of csv="p=0"`
+    ).toString().trim();
+
+    const duration = parseFloat(audioDuration);
+
+    // Get video duration
+    const videoDuration = execSync(
+      `ffprobe -i "${videoPath}" -show_entries format=duration -v quiet -of csv="p=0"`
+    ).toString().trim();
+
+    const vDuration = parseFloat(videoDuration);
+
+    // Calculate how many loops needed
+    const loops = Math.ceil(duration / vDuration);
+
+    // Build drawtext filter for hook
+    const safeHook = (hookText || '').replace(/'/g, "\'").replace(/:/g, "\:");
+    const drawtextFilter = safeHook
+      ? `drawtext=text='${safeHook}':fontsize=48:fontcolor=white:fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(t,0,2.5)':box=1:boxcolor=black@0.7:boxborderw=20`
+      : 'null';
+
+    // FFmpeg command: loop video, mix with audio, add hook text, trim to audio length
+    const cmd = `ffmpeg -y -stream_loop ${loops} -i "${videoPath}" -i "${audioPath}" -filter_complex "[0:v]${drawtextFilter}[v]" -map "[v]" -map 1:a -t ${duration} -c:v libx264 -preset fast -crf 23 -c:a aac -shortest "${outputPath}"`;
+
+    await new Promise((resolve, reject) => {
+      exec(cmd, (error, stdout, stderr) => {
+        if (error) reject(new Error(stderr));
+        else resolve();
+      });
+    });
+
+    // Send the file
+    res.download(outputPath, 'sharpstack-video.mp4', () => {
+      // Cleanup temp files
+      try { fs.unlinkSync(videoPath); } catch(e) {}
+      try { fs.unlinkSync(audioPath); } catch(e) {}
+      try { fs.unlinkSync(outputPath); } catch(e) {}
+    });
+
+  } catch(e) {
+    console.error('Video generation error:', e.message);
+    try { fs.unlinkSync(videoPath); } catch(err) {}
+    try { fs.unlinkSync(audioPath); } catch(err) {}
+    res.status(500).json({ error: 'Video generation failed: ' + e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
