@@ -137,6 +137,7 @@ audio{width:100%;margin-bottom:10px;}
     <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
     <div class="tab" onclick="switchTab('emails')">Email List</div>
     <div class="tab" onclick="switchTab('voiceover')">Voiceover Studio</div>
+    <div class="tab" onclick="switchTab('videostudio')">Video Studio</div>
   </div>
 
   <div class="main">
@@ -246,6 +247,39 @@ audio{width:100%;margin-bottom:10px;}
           <div class="script-preview" id="voScript">
             <p class="script-placeholder">Select a book to see the script.</p>
           </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    <!-- VIDEO STUDIO -->
+    <div class="panel" id="panel-videostudio">
+      <div style="max-width:600px;">
+        <div class="section-title">Upload your files</div>
+        <p style="font-size:0.82rem;color:var(--mid);margin-bottom:24px;font-weight:300;">Upload your screen recording and voiceover MP3. We'll combine them, loop the video, and add your hook text automatically.</p>
+
+        <div style="margin-bottom:20px;">
+          <label style="font-size:0.75rem;color:var(--mid);display:block;margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Screen Recording (MP4)</label>
+          <input type="file" id="vsVideo" accept="video/*" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);cursor:pointer;"/>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label style="font-size:0.75rem;color:var(--mid);display:block;margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Voiceover MP3</label>
+          <input type="file" id="vsAudio" accept="audio/*" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);cursor:pointer;"/>
+        </div>
+
+        <div style="margin-bottom:28px;">
+          <label style="font-size:0.75rem;color:var(--mid);display:block;margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Hook Text (shown first 2.5 seconds)</label>
+          <input type="text" id="vsHook" placeholder="e.g. FBI hostage negotiator's #1 trick" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);outline:none;"/>
+        </div>
+
+        <button class="gen-btn" id="vsGenBtn" onclick="generateVideo()" style="margin-bottom:12px;">Generate Video →</button>
+        <div class="vo-status" id="vsStatus"></div>
+
+        <div id="vsResult" style="display:none;margin-top:20px;background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:20px;">
+          <div class="audio-label">Your video is ready</div>
+          <a class="dl-btn" id="vsDlBtn" style="margin-top:8px;">↓ Download MP4</a>
         </div>
       </div>
     </div>
@@ -656,6 +690,52 @@ async function generateVoiceover() {
     status.textContent = '✓ Ready to download';
   } catch(e) {
     status.textContent = 'Error — try again';
+  }
+  btn.disabled = false;
+}
+
+async function generateVideo() {
+  const videoFile = document.getElementById('vsVideo').files[0];
+  const audioFile = document.getElementById('vsAudio').files[0];
+  const hookText = document.getElementById('vsHook').value;
+  const btn = document.getElementById('vsGenBtn');
+  const status = document.getElementById('vsStatus');
+
+  if (!videoFile || !audioFile) {
+    status.textContent = 'Please upload both video and audio files';
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Generating video — this takes 1-2 minutes...';
+  document.getElementById('vsResult').style.display = 'none';
+
+  const formData = new FormData();
+  formData.append('video', videoFile);
+  formData.append('audio', audioFile);
+  formData.append('hookText', hookText);
+
+  try {
+    const res = await fetch('/generate-video', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error);
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const dlBtn = document.getElementById('vsDlBtn');
+    dlBtn.href = url;
+    dlBtn.download = 'sharpstack-tiktok.mp4';
+    document.getElementById('vsResult').style.display = 'block';
+    status.textContent = '✓ Video ready — download and post to TikTok';
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
   }
   btn.disabled = false;
 }
