@@ -1,20 +1,5 @@
 require('dotenv').config();
-
-// FFmpeg setup using Node package
-const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
-const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-ffmpeg.setFfprobePath(ffmpegInstaller.path.replace('ffmpeg', 'ffprobe'));
 const express = require('express');
-// FFmpeg setup
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffprobePath = require('@ffprobe-installer/ffprobe').path;
-process.env.PATH = `${require('path').dirname(ffmpegPath)}:${process.env.PATH}`;
-process.env.PATH = `${require('path').dirname(ffprobePath)}:${process.env.PATH}`;
-const multer = require('multer');
-const { execSync, exec } = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -24,6 +9,25 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
+const multer = require('multer');
+const { exec } = require('child_process');
+const fs = require('fs');
+const os = require('os');
+
+// FFmpeg setup
+const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+const ffprobeInstaller = require('@ffprobe-installer/ffprobe');
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+ffmpeg.setFfprobePath(ffprobeInstaller.path);
+console.log('FFmpeg:', ffmpegInstaller.path);
+console.log('FFprobe:', ffprobeInstaller.path);
+
+
+
+
+
+
 
 const app = express();
 
