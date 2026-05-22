@@ -368,25 +368,7 @@ app.post('/generate-video', adminAuth, upload.fields([
         ]);
 
       // Add hook text overlay if provided
-      if (hookText && hookText.trim()) {
-        const safeHook = hookText.replace(/'/g, '').replace(/:/g, ' ').trim();
-        cmd = cmd.videoFilters([
-          {
-            filter: 'drawtext',
-            options: {
-              text: safeHook,
-              fontsize: 52,
-              fontcolor: 'white',
-              x: '(w-text_w)/2',
-              y: '(h-text_h)/2',
-              enable: 'between(t,0,2.5)',
-              box: 1,
-              boxcolor: 'black@0.75',
-              boxborderw: 20
-            }
-          }
-        ]);
-      }
+      // Hook text overlay removed - add text in TikTok editor instead
 
       cmd
         .output(outputPath)
