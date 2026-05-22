@@ -266,12 +266,12 @@ audio{width:100%;margin-bottom:10px;}
 
         <div style="margin-bottom:20px;">
           <label style="font-size:0.75rem;color:var(--mid);display:block;margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Voiceover MP3</label>
-          <input type="file" id="vsAudio" accept="/*" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);cursor:pointer;"/>
+          <input type="file" id="vsAudio" accept="audio/*" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);cursor:pointer;"/>
         </div>
 
-        <div style="margin-bottom:28px;">
-          <label style="font-size:0.75rem;color:var(--mid);display:block;margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Hook Text (shown first 2.5 seconds)</label>
-          <input type="text" id="vsHook" placeholder="e.g. FBI hostage negotiator's #1 trick" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);outline:none;"/>
+        <div style="margin-bottom:28px;background:var(--gold-bg);border:0.5px solid rgba(184,137,42,0.2);border-radius:12px;padding:14px 16px;">
+          <div style="font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Hook Text</div>
+          <div style="font-size:0.82rem;color:var(--mid);">Add your hook text directly in TikTok editor after downloading — tap Text, type your hook, place it at the start for 2-3 seconds.</div>
         </div>
 
         <button class="gen-btn" id="vsGenBtn" onclick="generateVideo()" style="margin-bottom:12px;">Generate Video →</button>
