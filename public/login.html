@@ -3,696 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sharp-Stack Admin</title>
+<title>Login — Sharp-Stack</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--bg:#f5f5f7;--surface:#fff;--border:#d2d2d7;--black:#1d1d1f;--mid:#6e6e73;--gold:#b8892a;--gold-bg:#fdf6e8;--green:#1a9e5c;--red:#e05;}
-body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--black);min-height:100vh;}
-
-/* LOGIN */
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-.login-card{background:var(--surface);border:0.5px solid var(--border);border-radius:20px;padding:48px 40px;max-width:380px;width:100%;text-align:center;}
-.login-logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--black);margin-bottom:4px;}
-.login-logo em{font-style:normal;color:var(--gold);}
-.login-badge{display:inline-block;background:var(--black);color:#fff;font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;padding:3px 10px;border-radius:10px;margin-bottom:32px;}
-.login-input{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:13px 18px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--black);outline:none;margin-bottom:12px;}
-.login-input:focus{border-color:var(--black);}
-.login-btn{width:100%;background:var(--black);color:#fff;border:none;padding:14px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:opacity 0.2s;}
-.login-btn:hover{opacity:0.75;}
-.login-error{font-size:0.78rem;color:var(--red);margin-bottom:10px;min-height:20px;}
-
-/* ADMIN */
-.admin{display:none;min-height:100vh;}
-.nav{background:var(--surface);border-bottom:0.5px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:10;}
-.nav-logo{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:var(--black);}
-.nav-logo em{font-style:normal;color:var(--gold);}
-.nav-badge{background:var(--black);color:#fff;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;padding:3px 10px;border-radius:10px;margin-left:8px;}
-.signout{background:transparent;border:0.5px solid var(--border);color:var(--black);padding:7px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;}
-.signout:hover{border-color:var(--black);}
-
-/* TABS */
-.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--border);background:var(--surface);padding:0 32px;}
-.tab{padding:14px 20px;font-size:0.82rem;color:var(--mid);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
-.tab:hover{color:var(--black);}
-.tab.active{color:var(--black);font-weight:500;border-bottom:2px solid var(--black);}
-
-.main{max-width:1200px;margin:0 auto;padding:36px 32px;}
-
-/* PANELS */
-.panel{display:none;}
-.panel.active{display:block;}
-
-/* STATS */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:32px;}
-.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:22px 20px;}
-.stat-label{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--mid);margin-bottom:10px;}
-.stat-value{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--black);line-height:1;}
-.stat-value.gold{color:var(--gold);}
-.stat-value.green{color:var(--green);}
-.stat-sub{font-size:0.68rem;color:var(--mid);margin-top:6px;}
-
-/* TABLE */
-.table-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;}
-.table-header{padding:18px 22px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
-.table-title{font-size:0.95rem;font-weight:500;}
-.search-input{background:var(--bg);border:0.5px solid var(--border);border-radius:20px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:0.8rem;color:var(--black);outline:none;width:240px;}
-.search-input:focus{border-color:var(--black);}
-table{width:100%;border-collapse:collapse;}
-th{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);padding:10px 22px;text-align:left;border-bottom:0.5px solid var(--border);font-weight:400;}
-td{padding:12px 22px;font-size:0.8rem;border-bottom:0.5px solid var(--border);}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:#fafafa;}
-.badge{display:inline-block;font-size:0.6rem;padding:3px 10px;border-radius:10px;font-weight:500;}
-.badge-pro{background:#edfaf3;color:var(--green);}
-.badge-free{background:var(--bg);color:var(--mid);}
-.action-btn{background:transparent;border:0.5px solid var(--border);border-radius:8px;padding:4px 10px;font-family:'DM Sans',sans-serif;font-size:0.7rem;cursor:pointer;transition:all 0.15s;}
-.action-btn:hover{border-color:var(--gold);color:var(--gold);}
-.action-btn.danger:hover{border-color:var(--red);color:var(--red);}
-.loader-row td,.empty-row td{text-align:center;color:var(--mid);padding:40px;}
-
-/* EMAIL LIST */
-.email-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:20px;}
-.export-btn{background:var(--black);color:#fff;border:none;border-radius:20px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer;transition:opacity 0.2s;}
-.export-btn:hover{opacity:0.75;}
-.email-count{font-size:0.8rem;color:var(--mid);}
-
-/* VOICEOVER STUDIO */
-.vo-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-.vo-left{}
-.vo-right{}
-.section-title{font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--mid);margin-bottom:14px;}
-.books{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
-.book{background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color 0.15s;}
-.book:hover{border-color:#bbb;}
-.book.active{border:2px solid var(--gold);background:var(--gold-bg);}
-.book-title{font-size:0.78rem;font-weight:500;margin-bottom:2px;}
-.book-author{font-size:0.65rem;color:var(--mid);}
-.voice-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;}
-.voice-row label{font-size:0.8rem;color:var(--mid);white-space:nowrap;}
-select{background:var(--surface);border:0.5px solid var(--border);border-radius:20px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:0.8rem;color:var(--black);outline:none;cursor:pointer;flex:1;}
-.gen-btn{width:100%;background:var(--black);color:#fff;border:none;border-radius:20px;padding:12px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:opacity 0.2s;}
-.gen-btn:hover{opacity:0.75;}
-.gen-btn:disabled{opacity:0.4;cursor:not-allowed;}
-.script-preview{background:var(--bg);border-radius:12px;padding:16px 18px;min-height:200px;margin-bottom:20px;}
-.script-preview p{font-size:0.82rem;line-height:1.8;white-space:pre-line;color:var(--black);}
-.script-placeholder{font-size:0.82rem;color:var(--mid);}
-.vo-status{font-size:0.78rem;color:var(--mid);margin-top:10px;min-height:20px;}
-.audio-out{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-top:16px;display:none;}
-.audio-label{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
-audio{width:100%;margin-bottom:10px;}
-.dl-btn{display:inline-flex;align-items:center;gap:6px;background:var(--black);color:#fff;border:none;border-radius:20px;padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;text-decoration:none;transition:opacity 0.2s;}
-.dl-btn:hover{opacity:0.75;}
-
-@media(max-width:768px){
-  .vo-grid{grid-template-columns:1fr;}
-  .nav,.tabs,.main{padding-left:16px;padding-right:16px;}
-}
+:root{--bg:#f5f5f7;--surface:#fff;--border:#d2d2d7;--black:#1d1d1f;--mid:#6e6e73;--gold:#b8892a;--gold-bg:#fdf6e8;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--black);min-height:100vh;display:flex;flex-direction:column;}
+nav{border-bottom:0.5px solid var(--border);padding:18px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(245,245,247,0.92);backdrop-filter:blur(16px);}
+.logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:var(--black);text-decoration:none;}
+.logo em{font-style:normal;color:var(--gold);}
+.wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px;}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:24px;padding:40px;width:100%;max-width:400px;}
+.card-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;margin-bottom:8px;}
+.card-sub{font-size:0.85rem;color:var(--mid);margin-bottom:28px;font-weight:300;}
+.tabs{display:flex;gap:0;margin-bottom:28px;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;}
+.tab{flex:1;padding:10px;text-align:center;font-size:0.8rem;cursor:pointer;background:transparent;border:none;font-family:'DM Sans',sans-serif;color:var(--mid);transition:all 0.2s;}
+.tab.active{background:var(--black);color:#fff;}
+.field{margin-bottom:16px;}
+label{display:block;font-size:0.72rem;color:var(--mid);margin-bottom:6px;letter-spacing:0.05em;text-transform:uppercase;}
+input{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--black);outline:none;transition:border-color 0.2s;}
+input:focus{border-color:var(--black);}
+.btn{width:100%;background:var(--black);color:#fff;border:none;padding:14px;border-radius:16px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;margin-top:8px;transition:opacity 0.2s;}
+.btn:hover{opacity:0.75;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.error{color:#e25;font-size:0.78rem;margin-top:12px;text-align:center;display:none;}
+.success{color:#2a9d5c;font-size:0.78rem;margin-top:12px;text-align:center;display:none;}
+.divider{text-align:center;font-size:0.72rem;color:var(--mid);margin:16px 0;}
+.back{display:block;text-align:center;font-size:0.78rem;color:var(--mid);margin-top:16px;text-decoration:none;}
+.back:hover{color:var(--black);}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
-<div class="login-wrap" id="loginWrap">
-  <div class="login-card">
-    <div class="login-logo">Sharp<em>-Stack</em></div>
-    <div class="login-badge">Admin</div>
-    <div class="login-error" id="loginError"></div>
-    <input type="password" class="login-input" id="adminPassword" placeholder="Admin password" onkeydown="if(event.key==='Enter')login()"/>
-    <button class="login-btn" onclick="login()">Sign in →</button>
+<nav>
+  <a href="/" class="logo">Sharp<em>-Stack</em></a>
+</nav>
+<div class="wrap">
+  <div class="card">
+    <div class="card-title">Welcome back.</div>
+    <div class="card-sub">Sign in to access your Pro extractions.</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Sign in</button>
+      <button class="tab" onclick="switchTab('register')">Create account</button>
+    </div>
+    <div id="loginForm">
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"/></div>
+      <button class="btn" id="loginBtn" onclick="login()">Sign in →</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="regPassword" placeholder="Min. 6 characters"/></div>
+      <button class="btn" id="registerBtn" onclick="register()">Create account →</button>
+    </div>
+    <div class="error" id="errorMsg"></div>
+    <div class="success" id="successMsg"></div>
+    <a href="/" class="back">← Back to Sharp-Stack</a>
   </div>
 </div>
-
-<!-- ADMIN -->
-<div class="admin" id="adminWrap">
-  <div class="nav">
-    <div>
-      <span class="nav-logo">Sharp<em>-Stack</em></span>
-      <span class="nav-badge">Admin</span>
-    </div>
-    <button class="signout" onclick="signout()">Sign out</button>
-  </div>
-
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
-    <div class="tab" onclick="switchTab('emails')">Email List</div>
-    <div class="tab" onclick="switchTab('voiceover')">Voiceover Studio</div>
-    <div class="tab" onclick="switchTab('videostudio')">Video Studio</div>
-  </div>
-
-  <div class="main">
-
-    <!-- DASHBOARD -->
-    <div class="panel active" id="panel-dashboard">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Users</div>
-          <div class="stat-value" id="statTotal">—</div>
-          <div class="stat-sub" id="statWeek">Loading...</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Pro Users</div>
-          <div class="stat-value gold" id="statPro">—</div>
-          <div class="stat-sub">Paying subscribers</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Free Users</div>
-          <div class="stat-value" id="statFree">—</div>
-          <div class="stat-sub">Conversion opportunity</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">MRR (Est.)</div>
-          <div class="stat-value green" id="statMRR">—</div>
-          <div class="stat-sub">Monthly recurring revenue</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Extractions</div>
-          <div class="stat-value" id="statExtractions">—</div>
-          <div class="stat-sub">All time</div>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <div class="table-header">
-          <div class="table-title">Users</div>
-          <input type="text" class="search-input" id="searchInput" placeholder="Search by email..." oninput="debounceSearch()"/>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Extractions</th>
-              <th>Joined</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="usersTable">
-            <tr class="loader-row"><td colspan="5">Loading users...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- EMAIL LIST -->
-    <div class="panel" id="panel-emails">
-      <div class="email-toolbar">
-        <div class="email-count" id="emailCount">Loading...</div>
-        <button class="export-btn" onclick="exportEmails()">↓ Export CSV</button>
-      </div>
-      <div class="table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Joined</th>
-              <th>Extractions Used</th>
-            </tr>
-          </thead>
-          <tbody id="emailTable">
-            <tr class="loader-row"><td colspan="4">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- VOICEOVER STUDIO -->
-    <div class="panel" id="panel-voiceover">
-      <div class="vo-grid">
-        <div class="vo-left">
-          <div class="section-title">Select book</div>
-          <div class="books" id="voBooks"></div>
-          <div class="voice-row">
-            <label>Voice</label>
-            <select id="voVoice">
-              <option value="onwK4e9ZLuTAKqWW03F9">Daniel — Deep &amp; Authoritative</option>
-              <option value="ErXwobaYiN019PkySvjV">Antoni — Warm &amp; Natural</option>
-              <option value="pNInz6obpgDQGcFmaJgB">Adam — Professional</option>
-              <option value="VR6AewLTigWG4xSOukaG">Arnold — Powerful</option>
-              <option value="yoZ06aMxZJJ28mfd3POQ">Sam — Clear &amp; Crisp</option>
-            </select>
-          </div>
-          <button class="gen-btn" id="voGenBtn" onclick="generateVoiceover()" disabled>Generate voiceover →</button>
-          <div class="vo-status" id="voStatus"></div>
-          <div class="audio-out" id="voAudioOut">
-            <div class="audio-label">Your voiceover</div>
-            <audio id="voPlayer" controls></audio>
-            <br>
-            <a class="dl-btn" id="voDlBtn" download>↓ Download MP3</a>
-          </div>
-        </div>
-        <div class="vo-right">
-          <div class="section-title">Script preview</div>
-          <div class="script-preview" id="voScript">
-            <p class="script-placeholder">Select a book to see the script.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-    <!-- VIDEO STUDIO -->
-    <div class="panel" id="panel-videostudio">
-      <div style="max-width:600px;">
-        <div class="section-title">Upload your files</div>
-        <p style="font-size:0.82rem;color:var(--mid);margin-bottom:24px;font-weight:300;">Upload your screen recording and voiceover MP3. We'll combine them, loop the video, and add your hook text automatically.</p>
-
-        <div style="margin-bottom:20px;">
-          <label style="font-size:0.75rem;color:var(--mid);display:block;margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Screen Recording (MP4)</label>
-          <input type="file" id="vsVideo" accept="video/*" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);cursor:pointer;"/>
-        </div>
-
-        <div style="margin-bottom:20px;">
-          <label style="font-size:0.75rem;color:var(--mid);display:block;margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Voiceover MP3</label>
-          <input type="file" id="vsAudio" accept="*/*" style="width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);cursor:pointer;"/>
-        </div>
-
-        <div style="margin-bottom:28px;background:var(--gold-bg);border:0.5px solid rgba(184,137,42,0.2);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Hook Text</div>
-          <div style="font-size:0.82rem;color:var(--mid);">Add your hook text directly in TikTok editor after downloading — tap Text, type your hook, place it at the start for 2-3 seconds.</div>
-        </div>
-
-        <button class="gen-btn" id="vsGenBtn" onclick="generateVideo()" style="margin-bottom:12px;">Generate Video →</button>
-        <div class="vo-status" id="vsStatus"></div>
-
-        <div id="vsResult" style="display:none;margin-top:20px;background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:20px;">
-          <div class="audio-label">Your video is ready</div>
-          <a class="dl-btn" id="vsDlBtn" style="margin-top:8px;">↓ Download MP4</a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
 <script>
-let adminToken = sessionStorage.getItem('admin_token');
-let currentPage = 1;
-let searchTimeout = null;
-let voSelected = null;
-let allUsers = [];
+function switchTab(tab) {
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1)));
+  document.getElementById('errorMsg').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'none';
+}
 
-const voScripts = [
-  {
-    book: 'Atomic Habits',
-    author: 'James Clear',
-    hook: 'What do the top 1% do differently every single morning?',
-    text: `What do the top 1% do differently every single morning?
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('successMsg').style.display = 'none';
+}
 
-James Clear spent years studying this.
-
-His answer will change how you think about success forever.
-
-You don't rise to your goals.
-
-You fall to your systems.
-
-Your goals are not the problem.
-Your daily habits are.
-
-Fix the system... everything else follows automatically.
-
-Want the full breakdown plus the 3 action steps?
-Link in bio. Free.`
-  },
-  {
-    book: '$100M Offers',
-    author: 'Alex Hormozi',
-    hook: 'Why do some offers make millions while yours gets ignored?',
-    text: `Why do some offers make millions while yours gets ignored?
-
-Alex Hormozi cracked this code.
-
-It has nothing to do with your price.
-Nothing to do with your product.
-
-It is your offer.
-
-Make it so good...
-people feel stupid saying no.
-
-That one shift is worth more than any marketing campaign.
-
-Want the full breakdown plus the exact framework?
-Link in bio. Free.`
-  },
-  {
-    book: 'Never Split the Difference',
-    author: 'Chris Voss',
-    hook: 'What trick does the FBI use to get anyone to say yes?',
-    text: `What trick does the FBI use to get anyone to say yes?
-
-Chris Voss negotiated hostage situations for 24 years.
-
-His number one technique takes 3 seconds to learn.
-
-Mirror the last 3 words they said.
-Then stay completely silent.
-
-People cannot stop talking.
-The more they talk... the more you win.
-
-Works in sales. Hiring. Raising prices. Everything.
-
-Want the full playbook?
-Link in bio. Free.`
-  },
-  {
-    book: 'The E-Myth Revisited',
-    author: 'Michael Gerber',
-    hook: 'Why do 90% of small businesses fail in the first 5 years?',
-    text: `Why do 90% of small businesses fail in the first 5 years?
-
-Michael Gerber figured it out in 1986.
-
-Most business owners are not running a business.
-
-They own a job.
-
-The moment you stop working...
-the money stops too.
-
-A real business runs without you.
-Build systems. Not dependencies.
-
-Want the full breakdown?
-Link in bio. Free.`
-  },
-  {
-    book: 'How to Win Friends',
-    author: 'Dale Carnegie',
-    hook: 'What is the one skill that makes everyone like you instantly?',
-    text: `What is the one skill that makes everyone like you instantly?
-
-Dale Carnegie discovered it in 1936.
-
-It is not confidence.
-Not looks.
-Not money.
-
-Stop talking about yourself.
-
-Ask questions.
-Listen more than you speak.
-Make them feel like the most interesting person in the room.
-
-90 years later... still the most powerful people skill alive.
-
-Want the full breakdown?
-Link in bio. Free.`
-  },
-  {
-    book: 'Think and Grow Rich',
-    author: 'Napoleon Hill',
-    hook: 'What do every single self-made millionaire have in common?',
-    text: `What do every single self-made millionaire have in common?
-
-Napoleon Hill interviewed 500 of them over 20 years.
-
-His answer surprised everyone.
-
-Not talent.
-Not luck.
-Not connections.
-
-A burning... obsessive... unshakeable desire.
-
-That is the starting point of every fortune ever built.
-
-Want the full breakdown?
-Link in bio. Free.`
-  },
-  {
-    book: 'Shoe Dog',
-    author: 'Phil Knight',
-    hook: 'What did the founder of Nike do when he almost went bankrupt 3 times?',
-    text: `What did the founder of Nike do when he almost went bankrupt 3 times?
-
-Phil Knight started with 50 dollars borrowed from his father.
-
-No office. No brand. No investors.
-
-Just a folding table and complete belief.
-
-Every time the company nearly died...
-he did the same thing.
-
-He did not stop.
-
-After building a 30 billion dollar company...
-that was still his only advice.
-
-Don't stop. Don't even think about it.
-
-Want the full story?
-Link in bio. Free.`
-  }
-];
-
-if (adminToken) showAdmin();
+function showSuccess(msg) {
+  const el = document.getElementById('successMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('errorMsg').style.display = 'none';
+}
 
 async function login() {
-  const pw = document.getElementById('adminPassword').value;
-  const err = document.getElementById('loginError');
-  err.textContent = '';
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return showError('Please fill in all fields.');
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
   try {
-    const res = await fetch('/admin/login', {
+    const res = await fetch('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pw })
+      body: JSON.stringify({ email, password })
     });
     const data = await res.json();
-    if (data.error) { err.textContent = 'Wrong password'; return; }
-    adminToken = data.token;
-    sessionStorage.setItem('admin_token', adminToken);
-    showAdmin();
-  } catch(e) { err.textContent = 'Connection error'; }
+    if (data.error) { showError(data.error); btn.disabled = false; btn.textContent = 'Sign in →'; return; }
+    localStorage.setItem('ss_token', data.token);
+    localStorage.setItem('ss_email', data.user.email);
+    localStorage.setItem('ss_pro', data.user.isPro ? '1' : '0');
+    window.location.href = '/';
+  } catch (e) {
+    showError('Something went wrong. Try again.');
+    btn.disabled = false; btn.textContent = 'Sign in →';
+  }
 }
 
-function showAdmin() {
-  document.getElementById('loginWrap').style.display = 'none';
-  document.getElementById('adminWrap').style.display = 'block';
-  loadStats();
-  loadUsers();
-  buildVoBooks();
-}
-
-function signout() {
-  sessionStorage.removeItem('admin_token');
-  adminToken = null;
-  document.getElementById('loginWrap').style.display = 'flex';
-  document.getElementById('adminWrap').style.display = 'none';
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('panel-' + tab).classList.add('active');
-  if (tab === 'emails') loadEmails();
-}
-
-// ---- DASHBOARD ----
-async function loadStats() {
+async function register() {
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  if (!email || !password) return showError('Please fill in all fields.');
+  if (password.length < 6) return showError('Password must be at least 6 characters.');
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true; btn.textContent = 'Creating account...';
   try {
-    const res = await fetch('/admin/stats', { headers: { Authorization: `Bearer ${adminToken}` } });
-    const d = await res.json();
-    document.getElementById('statTotal').textContent = d.totalUsers;
-    document.getElementById('statPro').textContent = d.proUsers;
-    document.getElementById('statFree').textContent = d.freeUsers;
-    document.getElementById('statMRR').textContent = '$' + d.mrr;
-    document.getElementById('statExtractions').textContent = d.totalExtractions;
-    document.getElementById('statWeek').textContent = `+${d.newThisWeek} this week`;
-  } catch(e) {}
-}
-
-async function loadUsers(page = 1) {
-  currentPage = page;
-  const search = document.getElementById('searchInput').value.trim();
-  const tbody = document.getElementById('usersTable');
-  tbody.innerHTML = '<tr class="loader-row"><td colspan="5">Loading...</td></tr>';
-  try {
-    let url = `/admin/users?page=${page}`;
-    if (search) url += `&search=${encodeURIComponent(search)}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${adminToken}` } });
+    const res = await fetch('/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
     const data = await res.json();
-    if (!data.users || data.users.length === 0) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No users found</td></tr>';
-      return;
+    if (data.error) { showError(data.error); btn.disabled = false; btn.textContent = 'Create account →'; return; }
+    if (data.token) {
+      localStorage.setItem('ss_token', data.token);
+      localStorage.setItem('ss_email', data.user.email);
+      window.location.href = '/';
+    } else {
+      showSuccess('Account created! Please check your email to confirm, then sign in.');
+      btn.disabled = false; btn.textContent = 'Create account →';
     }
-    tbody.innerHTML = data.users.map(u => `
-      <tr>
-        <td>${u.email}</td>
-        <td><span class="badge ${u.is_pro ? 'badge-pro' : 'badge-free'}">${u.is_pro ? '⭐ Pro' : 'Free'}</span></td>
-        <td>${u.extractions_used}</td>
-        <td>${new Date(u.created_at).toLocaleDateString()}</td>
-        <td>${u.is_pro
-          ? `<button class="action-btn danger" onclick="togglePro(${u.id}, false)">Remove Pro</button>`
-          : `<button class="action-btn" onclick="togglePro(${u.id}, true)">Grant Pro</button>`
-        }</td>
-      </tr>`).join('');
-    allUsers = data.users;
-  } catch(e) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Error loading users</td></tr>';
+  } catch (e) {
+    showError('Something went wrong. Try again.');
+    btn.disabled = false; btn.textContent = 'Create account →';
   }
 }
 
-async function togglePro(userId, isPro) {
-  try {
-    await fetch('/admin/grant-pro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
-      body: JSON.stringify({ userId, isPro })
-    });
-    loadStats();
-    loadUsers(currentPage);
-  } catch(e) { alert('Error updating user'); }
-}
-
-function debounceSearch() {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => loadUsers(1), 400);
-}
-
-// ---- EMAIL LIST ----
-async function loadEmails() {
-  const tbody = document.getElementById('emailTable');
-  tbody.innerHTML = '<tr class="loader-row"><td colspan="4">Loading...</td></tr>';
-  try {
-    const res = await fetch('/admin/users?page=1', { headers: { Authorization: `Bearer ${adminToken}` } });
-    const data = await res.json();
-    if (!data.users || data.users.length === 0) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No emails yet</td></tr>';
-      document.getElementById('emailCount').textContent = '0 emails collected';
-      return;
-    }
-    document.getElementById('emailCount').textContent = `${data.users.length} emails collected`;
-    tbody.innerHTML = data.users.map(u => `
-      <tr>
-        <td>${u.email}</td>
-        <td><span class="badge ${u.is_pro ? 'badge-pro' : 'badge-free'}">${u.is_pro ? '⭐ Pro' : 'Free'}</span></td>
-        <td>${new Date(u.created_at).toLocaleDateString()}</td>
-        <td>${u.extractions_used}</td>
-      </tr>`).join('');
-    allUsers = data.users;
-  } catch(e) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Error loading emails</td></tr>';
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const loginVisible = document.getElementById('loginForm').style.display !== 'none';
+    if (loginVisible) login(); else register();
   }
-}
-
-function exportEmails() {
-  if (!allUsers.length) return;
-  const csv = ['Email,Status,Joined,Extractions']
-    .concat(allUsers.map(u => `${u.email},${u.is_pro ? 'Pro' : 'Free'},${new Date(u.created_at).toLocaleDateString()},${u.extractions_used}`))
-    .join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `sharpstack-emails-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-}
-
-// ---- VOICEOVER STUDIO ----
-function buildVoBooks() {
-  const el = document.getElementById('voBooks');
-  voScripts.forEach((s, i) => {
-    const div = document.createElement('div');
-    div.className = 'book';
-    div.innerHTML = `<div class="book-title">${s.book}</div><div class="book-author">${s.author}</div>`;
-    div.onclick = () => {
-      voSelected = i;
-      document.querySelectorAll('.book').forEach((b, j) => b.classList.toggle('active', j === i));
-      document.getElementById('voScript').innerHTML = `<div style="background:#C9A84C;color:#000;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-weight:700;font-size:0.9rem;">📌 TEXT OVERLAY (show on screen): ${s.hook}</div><p>${s.text}</p>`;
-      document.getElementById('voGenBtn').disabled = false;
-      document.getElementById('voAudioOut').style.display = 'none';
-      document.getElementById('voStatus').textContent = '';
-    };
-    el.appendChild(div);
-  });
-}
-
-async function generateVoiceover() {
-  if (voSelected === null) return;
-  const btn = document.getElementById('voGenBtn');
-  const status = document.getElementById('voStatus');
-  btn.disabled = true;
-  status.textContent = 'Generating...';
-
-  try {
-    const res = await fetch('/generate-voiceover', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
-      body: JSON.stringify({
-        text: voScripts[voSelected].text,
-        voiceId: document.getElementById('voVoice').value
-      })
-    });
-
-    if (!res.ok) throw new Error('Generation failed');
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const name = voScripts[voSelected].book.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-
-    document.getElementById('voPlayer').src = url;
-    document.getElementById('voDlBtn').href = url;
-    document.getElementById('voDlBtn').download = `sharpstack-${name}.mp3`;
-    document.getElementById('voAudioOut').style.display = 'block';
-    status.textContent = '✓ Ready to download';
-  } catch(e) {
-    status.textContent = 'Error — try again';
-  }
-  btn.disabled = false;
-}
-
-async function generateVideo() {
-  const videoFile = document.getElementById('vsVideo').files[0];
-  const audioFile = document.getElementById('vsAudio').files[0];
-  const hookText = document.getElementById('vsHook').value;
-  const btn = document.getElementById('vsGenBtn');
-  const status = document.getElementById('vsStatus');
-
-  if (!videoFile || !audioFile) {
-    status.textContent = 'Please upload both video and audio files';
-    return;
-  }
-
-  btn.disabled = true;
-  status.textContent = 'Generating video — this takes 1-2 minutes...';
-  document.getElementById('vsResult').style.display = 'none';
-
-  const formData = new FormData();
-  formData.append('video', videoFile);
-  formData.append('audio', audioFile);
-  formData.append('hookText', hookText);
-
-  try {
-    const res = await fetch('/generate-video', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${adminToken}` },
-      body: formData
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error);
-    }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const dlBtn = document.getElementById('vsDlBtn');
-    dlBtn.href = url;
-    dlBtn.download = 'sharpstack-tiktok.mp4';
-    document.getElementById('vsResult').style.display = 'block';
-    status.textContent = '✓ Video ready — download and post to TikTok';
-  } catch(e) {
-    status.textContent = 'Error: ' + e.message;
-  }
-  btn.disabled = false;
-}
+});
 </script>
 </body>
 </html>
