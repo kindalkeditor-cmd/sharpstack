@@ -183,6 +183,8 @@ Return ONLY valid JSON, no markdown:
     const remaining = user.is_pro ? 999 : Math.max(0, FREE_LIMIT - used);
 
     res.json({ ...parsed, isPro: user.is_pro, remaining });
+    // Log for trending
+    try { await pool.query("INSERT INTO extractions_log (title) VALUES ($1)", [title]); } catch(e) {}
   } catch(e) { res.status(500).json({ error: 'Extraction failed' }); }
 });
 
@@ -233,6 +235,102 @@ Return ONLY valid JSON, no markdown:
   } catch(e) { res.status(500).json({ error: 'Failed to generate plan' }); }
 });
 
+
+// ---- SAVE & LIBRARY ----
+app.post('/library/save', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  const { title, author, core_idea, key_points, action_steps, one_liner } = req.body;
+  if (!title) return res.status(400).json({ error: 'Missing title' });
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS library (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT, author TEXT, core_idea TEXT,
+      key_points JSONB, action_steps JSONB, one_liner TEXT,
+      saved_at TIMESTAMP DEFAULT NOW()
+    )`);
+    const existing = await pool.query('SELECT id FROM library WHERE user_id=$1 AND title=$2', [req.user.id, title]);
+    if (existing.rows.length > 0) return res.json({ saved: false, message: 'Already saved' });
+    await pool.query(
+      'INSERT INTO library (user_id, title, author, core_idea, key_points, action_steps, one_liner) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+      [req.user.id, title, author, core_idea, JSON.stringify(key_points), JSON.stringify(action_steps), one_liner]
+    );
+    res.json({ saved: true });
+  } catch(e) { res.status(500).json({ error: 'Failed to save' }); }
+});
+
+app.get('/library', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  const search = req.query.search || '';
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS library (
+      id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT, author TEXT, core_idea TEXT, key_points JSONB, action_steps JSONB, one_liner TEXT,
+      saved_at TIMESTAMP DEFAULT NOW()
+    )`);
+    let query = 'SELECT * FROM library WHERE user_id=$1';
+    const params = [req.user.id];
+    if (search) { query += ' AND (title ILIKE $2 OR author ILIKE $2)'; params.push('%' + search + '%'); }
+    query += ' ORDER BY saved_at DESC';
+    const result = await pool.query(query, params);
+    res.json({ books: result.rows });
+  } catch(e) { res.status(500).json({ error: 'Failed to load library' }); }
+});
+
+app.delete('/library/:id', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  try {
+    await pool.query('DELETE FROM library WHERE id=$1 AND user_id=$2', [req.params.id, req.user.id]);
+    res.json({ deleted: true });
+  } catch(e) { res.status(500).json({ error: 'Failed to delete' }); }
+});
+
+// ---- TRENDING ----
+app.get('/trending', async (req, res) => {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS extractions_log (
+      id SERIAL PRIMARY KEY, title TEXT, extracted_at TIMESTAMP DEFAULT NOW()
+    )`);
+    const result = await pool.query(
+      "SELECT title, COUNT(*) as count FROM extractions_log WHERE extracted_at > NOW() - INTERVAL '7 days' GROUP BY title ORDER BY count DESC LIMIT 6"
+    );
+    res.json({ trending: result.rows });
+  } catch(e) { res.json({ trending: [] }); }
+});
+
+// ---- COMPARE BOOKS ----
+app.post('/compare', extractLimiter, authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  const result = await pool.query('SELECT is_pro FROM users WHERE id=$1', [req.user.id]);
+  if (!result.rows[0]?.is_pro) return res.status(403).json({ error: 'pro_required' });
+  const { book1, book2 } = req.body;
+  if (!book1 || !book2) return res.status(400).json({ error: 'Two books required' });
+  const prompt = `You are an expert business book analyst. Compare "${book1}" and "${book2}" for entrepreneurs.
+Return ONLY valid JSON, no markdown:
+{
+  "book1": "${book1}",
+  "book2": "${book2}",
+  "same_goal": "what both books ultimately want you to achieve",
+  "key_difference": "the fundamental difference in their approach",
+  "book1_wins_when": "specific situation where book1's advice is better",
+  "book2_wins_when": "specific situation where book2's advice is better",
+  "combined_insight": "the most powerful idea you get by reading both",
+  "read_first": "which to read first and why in one sentence"
+}`;
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    res.json(parsed);
+  } catch(e) { res.status(500).json({ error: 'Comparison failed' }); }
+});
+
+// ---- LOG EXTRACTION FOR TRENDING ----
 // ---- ELEVENLABS PROXY ----
 app.post('/generate-voiceover', adminAuth, async (req, res) => {
   const { text, voiceId } = req.body;
