@@ -284,7 +284,7 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
       <div class="usage-text" id="usageText">Sign up free to get 3 extractions</div>
       <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:100%"></div></div>
     </div>
-    <div class="trending-wrap" id="trendingWrap" style="display:none;"><div class="trending-title">🔥 Trending Among Founders This Week</div><div class="trending-chips" id="trendingChips"></div></div>
+    <div class="trending-wrap" id="trendingWrap" style="display:none;margin-bottom:20px;background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:16px 20px;"><div class="trending-title" style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--mid);margin-bottom:12px;">🔥 Trending Among Founders This Week</div><div class="trending-chips" id="trendingChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div></div>
     <div class="books-grid">
       <div class="book-card" onclick="tryExtract('Atomic Habits')"><div class="book-card-title">Atomic Habits</div><div class="book-card-author">James Clear</div></div>
       <div class="book-card" onclick="tryExtract('$100M Offers')"><div class="book-card-title">$100M Offers</div><div class="book-card-author">Alex Hormozi</div></div>
@@ -808,7 +808,7 @@ async function loadTrending() {
     const wrap = document.getElementById('trendingWrap');
     const chips = document.getElementById('trendingChips');
     if (!data.trending || data.trending.length === 0) return;
-    chips.innerHTML = data.trending.map(t => `<div class="trending-chip" onclick="tryExtract('${t.title}')">${t.title}<span class="trending-num">${t.count}</span></div>`).join('');
+    chips.innerHTML = data.trending.map(t => `<div class="trending-chip" onclick="tryExtract('${t.title}')">${t.title} <span class="trending-num">· ${t.count}</span></div>`).join('');
     wrap.style.display = 'block';
   } catch(e) {}
 }
