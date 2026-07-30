@@ -611,38 +611,28 @@ async function extract(title) {
           <div><div class="r-section-label">Key Points</div>${kp}</div>
           <div><div class="r-section-label">Action Steps</div>${as}</div>
           <div class="result-full"><div class="one-liner-wrap"><div class="one-liner-label">Remember This</div><div class="one-liner-text">"${d.one_liner}"</div></div></div>
-          <div class="result-full" style="margin-top:8px;">
-            ${currentUser && currentUser.isPro ? `
-            <div class="apply-it-wrap">
-              <div class="apply-it-header">
-                <div class="apply-it-title">⚡ Apply It To Your Business</div>
-                <div class="apply-it-sub">Get a personalised 3-step plan based on this book</div>
-              </div>
-              <input type="text" id="bizContext" placeholder="Describe your business in one line (optional)" class="apply-it-input"/>
-              <button class="apply-it-btn" onclick="generateApplyIt()">Generate My Plan →</button>
-              <div id="applyItResult"></div>
-            </div>` : `
-            <div class="apply-it-locked">
-              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                <div style="font-size:1.4rem;">⚡</div>
-                <div style="flex:1;">
-                  <div style="font-weight:600;font-size:0.85rem;color:var(--black);">Apply It To Your Business</div>
-                  <div style="font-size:0.78rem;color:var(--mid);margin-top:2px;">Get a personalised 3-step action plan — Pro only</div>
-                </div>
-                <button class="apply-it-upgrade-btn" onclick="showPaywall()">Unlock Pro →</button>
-              </div>
-            </div>`}
-          </div>
+          <div class="result-full" style="margin-top:8px;" id="applyItContainer"></div>
         </div>
       </div>`;
     
     window._lastExtract = d;
+    renderApplyIt();
 
     if (currentUser && !currentUser.isPro && d.remaining <= 0) setTimeout(() => showPaywall(), 3000);
   } catch(e) {
     out.innerHTML = `<p style="color:var(--red);font-size:0.82rem;text-align:center;padding:20px">${e.message || 'Something went wrong. Try again.'}</p>`;
   }
   document.getElementById('goBtn').disabled = false;
+}
+
+function renderApplyIt() {
+  const container = document.getElementById('applyItContainer');
+  if (!container) return;
+  if (currentUser && currentUser.isPro) {
+    container.innerHTML = '<div class="apply-it-wrap"><div class="apply-it-header"><div class="apply-it-title">⚡ Apply It To Your Business</div><div class="apply-it-sub">Get a personalised 3-step plan based on this book</div></div><input type="text" id="bizContext" placeholder="Describe your business in one line (optional)" class="apply-it-input"/><button class="apply-it-btn" onclick="generateApplyIt()">Generate My Plan →</button><div id="applyItResult"></div></div>';
+  } else {
+    container.innerHTML = '<div class="apply-it-locked"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="font-size:1.4rem;">⚡</div><div style="flex:1;"><div style="font-weight:600;font-size:0.85rem;color:var(--black);">Apply It To Your Business</div><div style="font-size:0.78rem;color:var(--mid);margin-top:2px;">Get a personalised 3-step action plan — Pro only</div></div><button class="apply-it-upgrade-btn" onclick="showPaywall()">Unlock Pro →</button></div></div>';
+  }
 }
 
 // Apply-It Plan Generator
