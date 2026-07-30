@@ -186,6 +186,53 @@ Return ONLY valid JSON, no markdown:
   } catch(e) { res.status(500).json({ error: 'Extraction failed' }); }
 });
 
+// ---- APPLY-IT PROMPTS ----
+app.post('/apply-it', extractLimiter, authMiddleware, async (req, res) => {
+  const { title, core_idea, key_points, action_steps, business_context } = req.body;
+  if (!title) return res.status(400).json({ error: 'Missing book title' });
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+
+  const result = await pool.query('SELECT is_pro FROM users WHERE id = $1', [req.user.id]);
+  const user = result.rows[0];
+  if (!user) return res.status(401).json({ error: 'User not found' });
+  if (!user.is_pro) return res.status(403).json({ error: 'pro_required' });
+
+  const context = business_context ? `The user's business context: "${business_context}"` : 'No specific business context provided — give general entrepreneur advice.';
+
+  const prompt = `You are an elite business coach. A founder just read the key insights from "${title}".
+
+Book core idea: ${core_idea || 'Not provided'}
+Key points: ${(key_points || []).join(', ')}
+Action steps from book: ${(action_steps || []).join(', ')}
+${context}
+
+Create a brutally practical 3-step plan to apply THIS book's lessons to THEIR business TODAY.
+Be specific. Be direct. No fluff. Each step must be something they can START in the next 24 hours.
+
+Return ONLY valid JSON, no markdown:
+{
+  "plan_title": "short punchy title for their plan",
+  "step_1": { "action": "specific action to take", "time": "how long it takes", "why": "why this first" },
+  "step_2": { "action": "specific action to take", "time": "how long it takes", "why": "why this second" },
+  "step_3": { "action": "specific action to take", "time": "how long it takes", "why": "why this third" },
+  "warning": "the one mistake most people make applying this book",
+  "first_move": "the single thing to do in the next 60 minutes"
+}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    res.json(parsed);
+  } catch(e) { res.status(500).json({ error: 'Failed to generate plan' }); }
+});
+
 // ---- ELEVENLABS PROXY ----
 app.post('/generate-voiceover', adminAuth, async (req, res) => {
   const { text, voiceId } = req.body;
