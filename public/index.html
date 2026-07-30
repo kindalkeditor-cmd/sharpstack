@@ -114,6 +114,27 @@ nav{border-bottom:0.5px solid var(--border);position:sticky;top:0;background:rgb
 .point-badge.arrow{background:var(--gold-bg);border-color:rgba(184,137,42,0.3);color:var(--gold);font-size:0.8rem;}
 .point-text{font-size:0.82rem;line-height:1.6;color:#3a3a3c;padding-top:2px;}
 .one-liner-wrap{background:var(--black);border-radius:12px;padding:22px 24px;}
+.apply-it-wrap{background:var(--gold-bg);border:1px solid rgba(201,168,76,0.3);border-radius:14px;padding:20px 22px;}
+.apply-it-header{margin-bottom:14px;}
+.apply-it-title{font-size:0.9rem;font-weight:700;color:var(--black);margin-bottom:4px;}
+.apply-it-sub{font-size:0.75rem;color:var(--mid);}
+.apply-it-input{width:100%;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);outline:none;margin-bottom:12px;}
+.apply-it-input:focus{border-color:var(--gold);}
+.apply-it-btn{background:var(--black);color:#fff;border:none;border-radius:20px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:opacity 0.2s;width:100%;}
+.apply-it-btn:hover{opacity:0.75;}
+.apply-it-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.apply-it-locked{background:var(--bg);border:0.5px dashed var(--border);border-radius:14px;padding:18px 20px;}
+.apply-it-upgrade-btn{background:var(--gold);color:#000;border:none;border-radius:20px;padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;}
+.plan-card{margin-top:16px;background:#fff;border-radius:12px;border:0.5px solid var(--border);overflow:hidden;}
+.plan-title{background:var(--black);color:var(--gold);font-size:0.82rem;font-weight:700;padding:12px 16px;letter-spacing:0.05em;}
+.plan-step{padding:14px 16px;border-bottom:0.5px solid var(--border);}
+.plan-step:last-child{border-bottom:none;}
+.plan-step-num{font-size:0.6rem;color:var(--gold);font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:4px;}
+.plan-step-action{font-size:0.85rem;font-weight:600;color:var(--black);margin-bottom:4px;}
+.plan-step-meta{font-size:0.75rem;color:var(--mid);}
+.plan-warning{background:#fff8e7;padding:12px 16px;font-size:0.78rem;color:#b45309;border-top:0.5px solid rgba(201,168,76,0.2);}
+.plan-first{background:var(--black);padding:14px 16px;font-size:0.82rem;color:#fff;}
+.plan-first strong{color:var(--gold);}
 .one-liner-label{font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px;}
 .one-liner-text{font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;color:var(--gold);line-height:1.5;}
 
@@ -590,14 +611,101 @@ async function extract(title) {
           <div><div class="r-section-label">Key Points</div>${kp}</div>
           <div><div class="r-section-label">Action Steps</div>${as}</div>
           <div class="result-full"><div class="one-liner-wrap"><div class="one-liner-label">Remember This</div><div class="one-liner-text">"${d.one_liner}"</div></div></div>
+          <div class="result-full" style="margin-top:8px;">
+            ${currentUser && currentUser.isPro ? `
+            <div class="apply-it-wrap">
+              <div class="apply-it-header">
+                <div class="apply-it-title">⚡ Apply It To Your Business</div>
+                <div class="apply-it-sub">Get a personalised 3-step plan based on this book</div>
+              </div>
+              <input type="text" id="bizContext" placeholder="Describe your business in one line (optional)" class="apply-it-input"/>
+              <button class="apply-it-btn" onclick="generateApplyIt()">Generate My Plan →</button>
+              <div id="applyItResult"></div>
+            </div>` : `
+            <div class="apply-it-locked">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <div style="font-size:1.4rem;">⚡</div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;font-size:0.85rem;color:var(--black);">Apply It To Your Business</div>
+                  <div style="font-size:0.78rem;color:var(--mid);margin-top:2px;">Get a personalised 3-step action plan — Pro only</div>
+                </div>
+                <button class="apply-it-upgrade-btn" onclick="showPaywall()">Unlock Pro →</button>
+              </div>
+            </div>`}
+          </div>
         </div>
       </div>`;
+    
+    window._lastExtract = d;
 
     if (currentUser && !currentUser.isPro && d.remaining <= 0) setTimeout(() => showPaywall(), 3000);
   } catch(e) {
     out.innerHTML = `<p style="color:var(--red);font-size:0.82rem;text-align:center;padding:20px">${e.message || 'Something went wrong. Try again.'}</p>`;
   }
   document.getElementById('goBtn').disabled = false;
+}
+
+// Apply-It Plan Generator
+async function generateApplyIt() {
+  const btn = document.querySelector('.apply-it-btn');
+  const resultDiv = document.getElementById('applyItResult');
+  const bizContext = document.getElementById('bizContext')?.value || '';
+  const extract = window._lastExtract;
+  if (!extract) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Generating your plan...';
+  resultDiv.innerHTML = '';
+
+  try {
+    const token = localStorage.getItem('ss_token');
+    const res = await fetch('/apply-it', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        title: extract.title,
+        core_idea: extract.core_idea,
+        key_points: extract.key_points,
+        action_steps: extract.action_steps,
+        business_context: bizContext
+      })
+    });
+
+    if (res.status === 403) {
+      resultDiv.innerHTML = '<p style="color:var(--red);font-size:0.8rem;margin-top:8px;">Pro required to generate plans.</p>';
+      btn.disabled = false; btn.textContent = 'Generate My Plan →';
+      return;
+    }
+
+    const d = await res.json();
+    if (d.error) throw new Error(d.error);
+
+    resultDiv.innerHTML = `
+      <div class="plan-card">
+        <div class="plan-title">📋 ${d.plan_title}</div>
+        <div class="plan-step">
+          <div class="plan-step-num">Step 01 · ${d.step_1.time}</div>
+          <div class="plan-step-action">${d.step_1.action}</div>
+          <div class="plan-step-meta">${d.step_1.why}</div>
+        </div>
+        <div class="plan-step">
+          <div class="plan-step-num">Step 02 · ${d.step_2.time}</div>
+          <div class="plan-step-action">${d.step_2.action}</div>
+          <div class="plan-step-meta">${d.step_2.why}</div>
+        </div>
+        <div class="plan-step">
+          <div class="plan-step-num">Step 03 · ${d.step_3.time}</div>
+          <div class="plan-step-action">${d.step_3.action}</div>
+          <div class="plan-step-meta">${d.step_3.why}</div>
+        </div>
+        <div class="plan-warning">⚠️ ${d.warning}</div>
+        <div class="plan-first"><strong>Do this in the next 60 min:</strong> ${d.first_move}</div>
+      </div>`;
+  } catch(e) {
+    resultDiv.innerHTML = '<p style="color:var(--red);font-size:0.8rem;margin-top:8px;">Failed to generate. Try again.</p>';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generate My Plan →';
 }
 
 // Keyboard enter on auth
