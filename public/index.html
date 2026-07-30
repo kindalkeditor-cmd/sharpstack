@@ -284,6 +284,7 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
       <div class="usage-text" id="usageText">Sign up free to get 3 extractions</div>
       <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:100%"></div></div>
     </div>
+    <div class="trending-wrap" id="trendingWrap" style="display:none;"><div class="trending-title">🔥 Trending Among Founders This Week</div><div class="trending-chips" id="trendingChips"></div></div>
     <div class="books-grid">
       <div class="book-card" onclick="tryExtract('Atomic Habits')"><div class="book-card-title">Atomic Habits</div><div class="book-card-author">James Clear</div></div>
       <div class="book-card" onclick="tryExtract('$100M Offers')"><div class="book-card-title">$100M Offers</div><div class="book-card-author">Alex Hormozi</div></div>
@@ -617,6 +618,9 @@ async function extract(title) {
     
     window._lastExtract = d;
     renderApplyIt();
+    renderSaveBtn(d);
+    loadTrending();
+    showFeatureNav();
 
     if (currentUser && !currentUser.isPro && d.remaining <= 0) setTimeout(() => showPaywall(), 3000);
   } catch(e) {
@@ -696,6 +700,172 @@ async function generateApplyIt() {
   }
   btn.disabled = false;
   btn.textContent = 'Generate My Plan →';
+}
+
+// ---- SAVE TO LIBRARY ----
+function renderSaveBtn(d) {
+  const container = document.getElementById('applyItContainer');
+  if (!container) return;
+  const existing = document.getElementById('saveBtnWrap');
+  if (existing) existing.remove();
+  const wrap = document.createElement('div');
+  wrap.id = 'saveBtnWrap';
+  wrap.style.marginTop = '10px';
+  wrap.innerHTML = '<button class="save-btn" id="saveBtn" onclick="saveToLibrary()">🔖 Save to Library</button><span id="saveMsg" style="font-size:0.75rem;color:var(--green);margin-left:10px;"></span>';
+  container.parentNode.insertBefore(wrap, container.nextSibling);
+}
+
+async function saveToLibrary() {
+  const d = window._lastExtract;
+  if (!d) return;
+  const token = localStorage.getItem('ss_token');
+  if (!token) { showAuth('signup'); return; }
+  const btn = document.getElementById('saveBtn');
+  const msg = document.getElementById('saveMsg');
+  btn.textContent = 'Saving...';
+  try {
+    const res = await fetch('/library/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(d)
+    });
+    const data = await res.json();
+    if (data.saved) {
+      btn.textContent = '✓ Saved';
+      btn.classList.add('saved');
+      msg.textContent = 'Added to your library';
+    } else {
+      btn.textContent = '✓ Already saved';
+      btn.classList.add('saved');
+    }
+  } catch(e) { btn.textContent = '🔖 Save to Library'; }
+}
+
+async function loadLibrary() {
+  const token = localStorage.getItem('ss_token');
+  if (!token) return;
+  const search = document.getElementById('libSearch')?.value || '';
+  const grid = document.getElementById('libGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="lib-empty">Loading...</div>';
+  try {
+    let url = '/library';
+    if (search) url += '?search=' + encodeURIComponent(search);
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    if (!data.books || data.books.length === 0) {
+      grid.innerHTML = '<div class="lib-empty">No saved books yet.<br/>Extract a book and hit Save to Library.</div>';
+      return;
+    }
+    grid.innerHTML = data.books.map(b => `
+      <div class="lib-card" onclick="reloadBook(${b.id})">
+        <button class="lib-del" onclick="event.stopPropagation();deleteFromLibrary(${b.id})">✕</button>
+        <div class="lib-card-title">${b.title}</div>
+        <div class="lib-card-author">${b.author || ''}</div>
+        <div class="lib-card-idea">${b.core_idea || ''}</div>
+      </div>`).join('');
+    window._libBooks = data.books;
+  } catch(e) { grid.innerHTML = '<div class="lib-empty">Error loading library.</div>'; }
+}
+
+async function deleteFromLibrary(id) {
+  const token = localStorage.getItem('ss_token');
+  try {
+    await fetch('/library/' + id, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    loadLibrary();
+  } catch(e) {}
+}
+
+function reloadBook(id) {
+  const book = window._libBooks?.find(b => b.id === id);
+  if (!book) return;
+  window._lastExtract = { ...book, key_points: book.key_points || [], action_steps: book.action_steps || [] };
+  const d = window._lastExtract;
+  const kp = (d.key_points || []).map((p,i) => `<div class="point-row"><div class="point-badge">${String(i+1).padStart(2,'0')}</div><div class="point-text">${p}</div></div>`).join('');
+  const as = (d.action_steps || []).map(p => `<div class="point-row"><div class="point-badge arrow">→</div><div class="point-text">${p}</div></div>`).join('');
+  const out = document.getElementById('output');
+  out.innerHTML = `<div class="result-card">
+    <div class="result-hero-bar"><div class="book-badge">📚 From Library</div><div class="book-name">${d.title}</div><div class="book-author-txt">${d.author || ''}</div></div>
+    <div class="result-body">
+      <div class="result-full"><div class="core-idea"><div class="core-label">Core Idea</div><div class="core-text">${d.core_idea}</div></div></div>
+      <div><div class="r-section-label">Key Points</div>${kp}</div>
+      <div><div class="r-section-label">Action Steps</div>${as}</div>
+      <div class="result-full"><div class="one-liner-wrap"><div class="one-liner-label">Remember This</div><div class="one-liner-text">"${d.one_liner}"</div></div></div>
+      <div class="result-full" style="margin-top:8px;" id="applyItContainer"></div>
+    </div>
+  </div>`;
+  renderApplyIt();
+  renderSaveBtn(d);
+  switchFeature('extract');
+  document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ---- TRENDING ----
+async function loadTrending() {
+  try {
+    const res = await fetch('/trending');
+    const data = await res.json();
+    const wrap = document.getElementById('trendingWrap');
+    const chips = document.getElementById('trendingChips');
+    if (!data.trending || data.trending.length === 0) return;
+    chips.innerHTML = data.trending.map(t => `<div class="trending-chip" onclick="tryExtract('${t.title}')">${t.title}<span class="trending-num">${t.count}</span></div>`).join('');
+    wrap.style.display = 'block';
+  } catch(e) {}
+}
+
+// ---- COMPARE BOOKS ----
+async function compareBooks() {
+  const book1 = document.getElementById('cBook1').value.trim();
+  const book2 = document.getElementById('cBook2').value.trim();
+  if (!book1 || !book2) return;
+  const token = localStorage.getItem('ss_token');
+  const result = document.getElementById('compareResult');
+  result.innerHTML = '<p style="color:var(--mid);font-size:0.82rem;">Comparing — this takes a few seconds...</p>';
+  try {
+    const res = await fetch('/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ book1, book2 })
+    });
+    if (res.status === 403) {
+      result.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:0.85rem;color:var(--mid);margin-bottom:10px;">Compare Books is Pro only</div><button class="apply-it-upgrade-btn" onclick="showPaywall()">Unlock Pro →</button></div>';
+      return;
+    }
+    const d = await res.json();
+    result.innerHTML = `
+      <div class="compare-row">
+        <div class="compare-box"><div class="compare-box-label">${d.book1} wins when</div><div class="compare-box-text">${d.book1_wins_when}</div></div>
+        <div class="compare-box"><div class="compare-box-label">${d.book2} wins when</div><div class="compare-box-text">${d.book2_wins_when}</div></div>
+      </div>
+      <div class="compare-full"><div class="compare-full-label">Same goal</div><div class="compare-full-text">${d.same_goal}</div></div>
+      <div class="compare-full"><div class="compare-full-label">Key difference</div><div class="compare-full-text">${d.key_difference}</div></div>
+      <div class="compare-full"><div class="compare-full-label">⚡ Combined insight</div><div class="compare-full-text">${d.combined_insight}</div></div>
+      <div class="compare-full" style="background:var(--gold);"><div class="compare-full-label" style="color:#000;">Read first</div><div class="compare-full-text" style="color:#000;font-weight:600;">${d.read_first}</div></div>`;
+  } catch(e) { result.innerHTML = '<p style="color:var(--red);font-size:0.82rem;">Comparison failed. Try again.</p>'; }
+}
+
+// ---- FEATURE NAV ----
+function showFeatureNav() {
+  const nav = document.getElementById('featureNav');
+  if (nav) nav.style.display = 'block';
+  // Show compare locked state for free users
+  const locked = document.getElementById('compareLocked');
+  const form = document.getElementById('compareForm');
+  if (locked && form) {
+    if (currentUser && currentUser.isPro) { locked.style.display = 'none'; form.style.display = 'block'; }
+    else { locked.style.display = 'block'; form.style.display = 'none'; }
+  }
+}
+
+function switchFeature(tab) {
+  document.querySelectorAll('.feat-btn').forEach((b,i) => {
+    const tabs = ['extract','library','compare'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.feature-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('feat-' + tab);
+  if (panel) { panel.classList.add('active'); }
+  if (tab === 'library') loadLibrary();
 }
 
 // Keyboard enter on auth
