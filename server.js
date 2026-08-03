@@ -453,10 +453,63 @@ const WEEKLY_BOOKS = [
 ];
 
 async function sendWeeklyEmail(user, book) {
-  // Using a simple fetch to a future email service
-  // For now logs the email that would be sent
-  console.log(`Weekly email to ${user.email}: ${book.title}`);
-  // When you add SendGrid/Resend: implement here
+  const RESEND_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_KEY) { console.log(`[No Resend key] Would send to ${user.email}: ${book.title}`); return; }
+  
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    body{font-family:Arial,sans-serif;background:#f5f5f7;margin:0;padding:40px 20px;}
+    .card{background:#fff;border-radius:16px;max-width:560px;margin:0 auto;overflow:hidden;}
+    .header{background:#1d1d1f;padding:28px 32px;}
+    .logo{font-size:1.2rem;font-weight:900;color:#fff;}
+    .logo em{color:#b8892a;font-style:normal;}
+    .tag{background:#b8892a;color:#000;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;padding:3px 10px;border-radius:10px;display:inline-block;margin-top:8px;}
+    .body{padding:32px;}
+    .book-title{font-size:1.6rem;font-weight:900;color:#1d1d1f;margin-bottom:4px;}
+    .book-author{color:#b8892a;font-size:0.85rem;margin-bottom:20px;}
+    .core{background:#fdf6e8;border-radius:10px;padding:16px;margin-bottom:20px;font-size:0.9rem;color:#1d1d1f;line-height:1.6;}
+    .section-label{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#6e6e73;margin-bottom:10px;}
+    .point{padding:8px 0;border-bottom:0.5px solid #f0f0f0;font-size:0.85rem;color:#1d1d1f;}
+    .action{padding:8px 0;font-size:0.85rem;color:#1d1d1f;}
+    .remember{background:#1d1d1f;border-radius:10px;padding:18px;margin:20px 0;font-style:italic;color:#b8892a;font-size:0.95rem;line-height:1.6;}
+    .cta{display:block;background:#1d1d1f;color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:20px;font-size:0.88rem;margin-top:20px;}
+    .footer{text-align:center;padding:20px;font-size:0.72rem;color:#6e6e73;}
+  </style></head><body>
+    <div class="card">
+      <div class="header">
+        <div class="logo">Sharp<em>-Stack</em></div>
+        <div class="tag">📚 This Week's Edge</div>
+      </div>
+      <div class="body">
+        <div class="book-title">${book.title}</div>
+        <div class="book-author">by ${book.author}</div>
+        <div class="core">${book.core_idea}</div>
+        <div class="section-label">Key Points</div>
+        ${book.key_points.map(p => `<div class="point">${p}</div>`).join('')}
+        <div style="margin-top:16px;"></div>
+        <div class="section-label">Apply It This Week</div>
+        ${book.action_steps.map(a => `<div class="action">→ ${a}</div>`).join('')}
+        <div class="remember">"${book.one_liner}"</div>
+        <a href="https://www.sharp-stack.com" class="cta">Get the full extract + your personalised plan →</a>
+      </div>
+      <div class="footer">You are receiving this because you are a Sharp-Stack Pro member.<br/>© 2026 Sharp-Stack</div>
+    </div>
+  </body></html>`;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_KEY}` },
+      body: JSON.stringify({
+        from: 'Sharp-Stack <weekly@sharp-stack.com>',
+        to: [user.email],
+        subject: `This week's edge: ${book.title}`,
+        html
+      })
+    });
+    const data = await res.json();
+    if (data.id) { console.log(`Email sent to ${user.email}: ${data.id}`); }
+    else { console.error(`Failed to send to ${user.email}:`, data); }
+  } catch(e) { console.error(`Email error for ${user.email}:`, e.message); }
 }
 
 app.post('/weekly-email/send', async (req, res) => {
