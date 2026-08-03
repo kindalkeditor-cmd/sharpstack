@@ -185,6 +185,7 @@ Return ONLY valid JSON, no markdown:
     res.json({ ...parsed, isPro: user.is_pro, remaining });
     // Log for trending
     try { await pool.query("INSERT INTO extractions_log (title) VALUES ($1)", [title]); } catch(e) {}
+    if (req.user) { updateStreak(req.user.id); }
   } catch(e) { res.status(500).json({ error: 'Extraction failed' }); }
 });
 
@@ -331,6 +332,113 @@ Return ONLY valid JSON, no markdown:
 });
 
 // ---- LOG EXTRACTION FOR TRENDING ----
+
+// ---- LIVE COUNTER ----
+app.get('/stats/counter', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT COUNT(*) as total FROM extractions_log');
+    const users = await pool.query('SELECT COUNT(*) as total FROM users');
+    res.json({ extractions: parseInt(result.rows[0].total) || 0, users: parseInt(users.rows[0].total) || 0 });
+  } catch(e) { res.json({ extractions: 0, users: 0 }); }
+});
+
+// ---- STREAK ----
+app.get('/streak', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  try {
+    const result = await pool.query('SELECT * FROM streaks WHERE user_id=$1', [req.user.id]);
+    if (!result.rows.length) return res.json({ current: 0, longest: 0 });
+    const s = result.rows[0];
+    const today = new Date().toISOString().split('T')[0];
+    const last = s.last_extraction_date ? s.last_extraction_date.toISOString().split('T')[0] : null;
+    const active = last === today;
+    res.json({ current: s.current_streak, longest: s.longest_streak, active });
+  } catch(e) { res.json({ current: 0, longest: 0 }); }
+});
+
+// Update streak on extract - called internally
+async function updateStreak(userId) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const result = await pool.query('SELECT * FROM streaks WHERE user_id=$1', [userId]);
+    if (!result.rows.length) {
+      await pool.query('INSERT INTO streaks (user_id, current_streak, last_extraction_date, longest_streak) VALUES ($1,1,$2,1)', [userId, today]);
+      return;
+    }
+    const s = result.rows[0];
+    const last = s.last_extraction_date ? s.last_extraction_date.toISOString().split('T')[0] : null;
+    if (last === today) return;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const newStreak = last === yesterday ? s.current_streak + 1 : 1;
+    const longest = Math.max(newStreak, s.longest_streak);
+    await pool.query('UPDATE streaks SET current_streak=$1, last_extraction_date=$2, longest_streak=$3 WHERE user_id=$4', [newStreak, today, longest, userId]);
+  } catch(e) {}
+}
+
+// ---- REFERRAL ----
+app.post('/referral/generate', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  try {
+    const existing = await pool.query('SELECT code FROM referrals WHERE referrer_id=$1 AND used=false LIMIT 1', [req.user.id]);
+    if (existing.rows.length) return res.json({ code: existing.rows[0].code });
+    const code = require('crypto').randomBytes(6).toString('hex');
+    await pool.query('INSERT INTO referrals (referrer_id, code) VALUES ($1,$2)', [req.user.id, code]);
+    res.json({ code });
+  } catch(e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+app.post('/referral/use', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'Code required' });
+  try {
+    const ref = await pool.query('SELECT * FROM referrals WHERE code=$1 AND used=false', [code]);
+    if (!ref.rows.length) return res.status(404).json({ error: 'Invalid or used code' });
+    const referral = ref.rows[0];
+    if (referral.referrer_id === req.user.id) return res.status(400).json({ error: 'Cannot use your own code' });
+    await pool.query('UPDATE referrals SET used=true, referred_email=$1 WHERE code=$2', [req.user.email, code]);
+    // Grant 30 days pro to both
+    await pool.query('UPDATE users SET is_pro=true WHERE id=$1 OR id=$2', [req.user.id, referral.referrer_id]);
+    res.json({ success: true, message: 'Both you and your friend got 30 days Pro free!' });
+  } catch(e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+// ---- TEAM/B2B ----
+app.post('/team/create', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  const { name } = req.body;
+  try {
+    const existing = await pool.query('SELECT id FROM teams WHERE owner_id=$1', [req.user.id]);
+    if (existing.rows.length) return res.json({ team: existing.rows[0] });
+    const result = await pool.query('INSERT INTO teams (name, owner_id) VALUES ($1,$2) RETURNING *', [name || 'My Team', req.user.id]);
+    await pool.query('INSERT INTO team_members (team_id, user_id, joined) VALUES ($1,$2,true)', [result.rows[0].id, req.user.id]);
+    res.json({ team: result.rows[0] });
+  } catch(e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+app.post('/team/invite', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  const { email } = req.body;
+  try {
+    const team = await pool.query('SELECT * FROM teams WHERE owner_id=$1', [req.user.id]);
+    if (!team.rows.length) return res.status(404).json({ error: 'No team found' });
+    const members = await pool.query('SELECT COUNT(*) as count FROM team_members WHERE team_id=$1', [team.rows[0].id]);
+    if (parseInt(members.rows[0].count) >= team.rows[0].seats) return res.status(400).json({ error: 'Team is full' });
+    await pool.query('INSERT INTO team_members (team_id, invited_email) VALUES ($1,$2) ON CONFLICT DO NOTHING', [team.rows[0].id, email]);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+app.get('/team', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  try {
+    const team = await pool.query('SELECT * FROM teams WHERE owner_id=$1', [req.user.id]);
+    if (!team.rows.length) return res.json({ team: null });
+    const members = await pool.query('SELECT tm.*, u.email FROM team_members tm LEFT JOIN users u ON tm.user_id=u.id WHERE tm.team_id=$1', [team.rows[0].id]);
+    res.json({ team: team.rows[0], members: members.rows });
+  } catch(e) { res.status(500).json({ error: 'Failed' }); }
+});
+
 // ---- ELEVENLABS PROXY ----
 app.post('/generate-voiceover', adminAuth, async (req, res) => {
   const { text, voiceId } = req.body;
