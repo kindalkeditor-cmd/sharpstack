@@ -346,7 +346,6 @@ app.get('/stats/counter', async (req, res) => {
 app.get('/streak', authMiddleware, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'login_required' });
   try {
-    await pool.query(`CREATE TABLE IF NOT EXISTS streaks (user_id INTEGER PRIMARY KEY REFERENCES users(id), current_streak INTEGER DEFAULT 0, last_extraction_date DATE, longest_streak INTEGER DEFAULT 0)`);
     const result = await pool.query('SELECT * FROM streaks WHERE user_id=$1', [req.user.id]);
     if (!result.rows.length) return res.json({ current: 0, longest: 0 });
     const s = result.rows[0];
@@ -380,18 +379,12 @@ async function updateStreak(userId) {
 app.post('/referral/generate', authMiddleware, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'login_required' });
   try {
-    await pool.query(`CREATE TABLE IF NOT EXISTS referrals (
-      id SERIAL PRIMARY KEY, referrer_id INTEGER REFERENCES users(id),
-      referred_email VARCHAR(255), code VARCHAR(32) UNIQUE,
-      used BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW()
-    )`);
     const existing = await pool.query('SELECT code FROM referrals WHERE referrer_id=$1 AND used=false LIMIT 1', [req.user.id]);
     if (existing.rows.length) return res.json({ code: existing.rows[0].code });
-    const crypto = require('crypto');
-    const code = crypto.randomBytes(6).toString('hex');
+    const code = require('crypto').randomBytes(6).toString('hex');
     await pool.query('INSERT INTO referrals (referrer_id, code) VALUES ($1,$2)', [req.user.id, code]);
     res.json({ code });
-  } catch(e) { console.error('Referral error:', e); res.status(500).json({ error: 'Failed' }); }
+  } catch(e) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/referral/use', authMiddleware, async (req, res) => {
@@ -415,8 +408,6 @@ app.post('/team/create', authMiddleware, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'login_required' });
   const { name } = req.body;
   try {
-    await pool.query(`CREATE TABLE IF NOT EXISTS teams (id SERIAL PRIMARY KEY, name VARCHAR(255), owner_id INTEGER REFERENCES users(id), stripe_subscription_id VARCHAR(255), seats INTEGER DEFAULT 5, created_at TIMESTAMP DEFAULT NOW())`);
-    await pool.query(`CREATE TABLE IF NOT EXISTS team_members (id SERIAL PRIMARY KEY, team_id INTEGER REFERENCES teams(id), user_id INTEGER REFERENCES users(id), invited_email VARCHAR(255), joined BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW())`);
     const existing = await pool.query('SELECT id FROM teams WHERE owner_id=$1', [req.user.id]);
     if (existing.rows.length) return res.json({ team: existing.rows[0] });
     const result = await pool.query('INSERT INTO teams (name, owner_id) VALUES ($1,$2) RETURNING *', [name || 'My Team', req.user.id]);
@@ -446,6 +437,113 @@ app.get('/team', authMiddleware, async (req, res) => {
     const members = await pool.query('SELECT tm.*, u.email FROM team_members tm LEFT JOIN users u ON tm.user_id=u.id WHERE tm.team_id=$1', [team.rows[0].id]);
     res.json({ team: team.rows[0], members: members.rows });
   } catch(e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+
+// ---- WEEKLY EMAIL DROP ----
+const WEEKLY_BOOKS = [
+  { title: 'Atomic Habits', author: 'James Clear', core_idea: 'Tiny 1% improvements compound into remarkable results. Systems beat goals every time.', key_points: ['You fall to your systems, not goals', 'Identity drives behavior — become the person first', 'Make habits obvious, attractive, easy, satisfying'], action_steps: ['Pick one habit and shrink it to 2 minutes', 'Stack it onto an existing daily habit', 'Track it visually — never break the chain'], one_liner: 'You do not rise to your goals. You fall to your systems.' },
+  { title: '$100M Offers', author: 'Alex Hormozi', core_idea: 'Make offers so good people feel stupid saying no. Value beats price every time.', key_points: ['The offer is more important than the product', 'Stack value until it feels like a no-brainer', 'Reduce risk to zero with guarantees'], action_steps: ['Write down your offer and remove everything that isnt a direct outcome', 'Add a guarantee that removes all risk', 'Price based on value delivered, not cost'], one_liner: 'Make your offer so good people feel stupid saying no.' },
+  { title: 'Never Split the Difference', author: 'Chris Voss', core_idea: 'Tactical empathy and calibrated questions get you more than any compromise.', key_points: ['Mirror the last 3 words, then go silent', 'Label emotions out loud to defuse them', 'Never split the difference — both sides lose'], action_steps: ['In your next negotiation, mirror instead of argue', 'Replace why with how and what questions', 'Write their pain down before any deal conversation'], one_liner: 'He who learns to disagree without being disagreeable owns the room.' },
+  { title: 'The E-Myth Revisited', author: 'Michael Gerber', core_idea: 'Working IN your business kills it. Build systems so it runs without you.', key_points: ['Most owners are technicians trapped in a job', 'A real business runs without you', 'Build systems, not dependencies'], action_steps: ['List every task you do this week', 'Write a procedure for your most repeated task', 'Block 1 hour weekly to work ON not IN'], one_liner: 'If your business depends on you, you own a job, not a business.' },
+  { title: 'Deep Work', author: 'Cal Newport', core_idea: 'The ability to focus without distraction is the most valuable skill in the modern economy.', key_points: ['Deep work is rare and therefore valuable', 'Shallow work is easy to replicate and low value', 'Rituals protect focus better than willpower'], action_steps: ['Block 4 hours of deep work daily — no exceptions', 'Delete all notifications during deep work blocks', 'Create a shutdown ritual to end work completely'], one_liner: 'Protect unbroken focus like your revenue depends on it. Because it does.' },
+  { title: 'Think and Grow Rich', author: 'Napoleon Hill', core_idea: 'Success starts with a burning desire, backed by a definite plan, and never giving up.', key_points: ['Desire is the starting point of all achievement', 'Specialized knowledge beats general knowledge', 'The mastermind principle multiplies individual power'], action_steps: ['Write your definite chief aim in one sentence', 'Read it morning and night with emotion', 'Join or form a mastermind group this week'], one_liner: 'Whatever the mind can conceive and believe, it can achieve.' },
+  { title: 'Shoe Dog', author: 'Phil Knight', core_idea: 'Relentless belief in your idea and refusing to stop is the only real strategy that works.', key_points: ['Nike almost went bankrupt 6 times', 'Belief precedes proof — always', 'The mission matters more than the money'], action_steps: ['Write down the moment you almost quit and why you didnt', 'Identify the one thing keeping you going', 'Do not stop. Do not even think about it.'], one_liner: 'Do not stop. Do not even think about stopping.' },
+];
+
+async function sendWeeklyEmail(user, book) {
+  // Using a simple fetch to a future email service
+  // For now logs the email that would be sent
+  console.log(`Weekly email to ${user.email}: ${book.title}`);
+  // When you add SendGrid/Resend: implement here
+}
+
+app.post('/weekly-email/send', async (req, res) => {
+  // This endpoint is called by a cron job or manually
+  const secret = req.headers['x-cron-secret'];
+  if (secret !== process.env.CRON_SECRET && secret !== 'sharpstack-cron-2026') return res.status(401).json({ error: 'Unauthorized' });
+  
+  try {
+    const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000)) % WEEKLY_BOOKS.length;
+    const book = WEEKLY_BOOKS[weekNum];
+    const users = await pool.query('SELECT * FROM users WHERE is_pro=true');
+    
+    let sent = 0;
+    for (const user of users.rows) {
+      await sendWeeklyEmail(user, book);
+      sent++;
+    }
+    res.json({ sent, book: book.title, week: weekNum });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/weekly-email/preview', async (req, res) => {
+  const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000)) % WEEKLY_BOOKS.length;
+  const book = WEEKLY_BOOKS[weekNum];
+  
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    body{font-family:'DM Sans',Arial,sans-serif;background:#f5f5f7;margin:0;padding:40px 20px;}
+    .card{background:#fff;border-radius:16px;max-width:560px;margin:0 auto;overflow:hidden;}
+    .header{background:#1d1d1f;padding:28px 32px;}
+    .logo{font-size:1.2rem;font-weight:900;color:#fff;}
+    .logo em{color:#b8892a;font-style:normal;}
+    .tag{background:#b8892a;color:#000;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;padding:3px 10px;border-radius:10px;display:inline-block;margin-top:8px;}
+    .body{padding:32px;}
+    .book-title{font-size:1.6rem;font-weight:900;color:#1d1d1f;margin-bottom:4px;}
+    .book-author{color:#b8892a;font-size:0.85rem;margin-bottom:20px;}
+    .core{background:#fdf6e8;border-radius:10px;padding:16px;margin-bottom:20px;font-size:0.9rem;color:#1d1d1f;line-height:1.6;}
+    .section-label{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#6e6e73;margin-bottom:10px;}
+    .point{padding:8px 0;border-bottom:0.5px solid #f0f0f0;font-size:0.85rem;color:#1d1d1f;}
+    .action{padding:8px 0;font-size:0.85rem;color:#1d1d1f;}
+    .action::before{content:"→ ";color:#b8892a;font-weight:700;}
+    .remember{background:#1d1d1f;border-radius:10px;padding:18px;margin:20px 0;font-style:italic;color:#b8892a;font-size:0.95rem;line-height:1.6;}
+    .cta{display:block;background:#1d1d1f;color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:20px;font-size:0.88rem;margin-top:20px;}
+    .footer{text-align:center;padding:20px;font-size:0.72rem;color:#6e6e73;}
+  </style></head><body>
+    <div class="card">
+      <div class="header">
+        <div class="logo">Sharp<em>-Stack</em></div>
+        <div class="tag">📚 This Week's Edge</div>
+      </div>
+      <div class="body">
+        <div class="book-title">${book.title}</div>
+        <div class="book-author">by ${book.author}</div>
+        <div class="core">${book.core_idea}</div>
+        <div class="section-label">Key Points</div>
+        ${book.key_points.map(p => `<div class="point">${p}</div>`).join('')}
+        <div style="margin-top:16px;"></div>
+        <div class="section-label">Apply It This Week</div>
+        ${book.action_steps.map(a => `<div class="action">${a}</div>`).join('')}
+        <div class="remember">"${book.one_liner}"</div>
+        <a href="https://www.sharp-stack.com" class="cta">Get the full extract + your personalised plan →</a>
+      </div>
+      <div class="footer">You're receiving this because you're a Sharp-Stack Pro member.<br/>© 2026 Sharp-Stack</div>
+    </div>
+  </body></html>`;
+  
+  res.send(html);
+});
+
+// ---- PUSH NOTIFICATIONS (Web Push) ----
+app.post('/notifications/subscribe', authMiddleware, async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'login_required' });
+  const { subscription } = req.body;
+  if (!subscription) return res.status(400).json({ error: 'Subscription required' });
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id),
+      subscription JSONB, created_at TIMESTAMP DEFAULT NOW()
+    )`);
+    await pool.query(
+      'INSERT INTO push_subscriptions (user_id, subscription) VALUES ($1,$2) ON CONFLICT DO NOTHING',
+      [req.user.id, JSON.stringify(subscription)]
+    );
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: 'Failed' }); }
+});
+
+app.get('/notifications/vapid-key', (req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || 'not-configured' });
 });
 
 // ---- ELEVENLABS PROXY ----
@@ -655,4 +753,11 @@ app.post('/generate-video', adminAuth, upload.fields([
 });
 
 const PORT = process.env.PORT || 3000;
+// Serve service worker
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.sendFile(require('path').join(__dirname, 'public', 'sw.js'));
+});
+
 app.listen(PORT, () => console.log(`Sharp-Stack running at http://localhost:${PORT}`));
