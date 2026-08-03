@@ -864,4 +864,263 @@ async function loadTrending() {
     const res = await fetch('/trending');
     const data = await res.json();
     const wrap = document.getElementById('trendingWrap');
-    const chips 
+    const chips = document.getElementById('trendingChips');
+    if (!data.trending || data.trending.length === 0) return;
+    chips.innerHTML = data.trending.map(t => `<div onclick="tryExtract('${t.title}')" style="background:#f5f5f7;border:0.5px solid #d2d2d7;border-radius:20px;padding:6px 14px;font-size:0.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">${t.title} <span style="font-size:0.65rem;color:#6e6e73;">· ${t.count}</span></div>`).join('');
+    wrap.style.display = 'block';
+  } catch(e) {}
+}
+
+// ---- COMPARE BOOKS ----
+async function compareBooks() {
+  const book1 = document.getElementById('cBook1').value.trim();
+  const book2 = document.getElementById('cBook2').value.trim();
+  if (!book1 || !book2) return;
+  const token = localStorage.getItem('ss_token');
+  const result = document.getElementById('compareResult');
+  result.innerHTML = '<p style="color:var(--mid);font-size:0.82rem;">Comparing — this takes a few seconds...</p>';
+  try {
+    const res = await fetch('/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ book1, book2 })
+    });
+    if (res.status === 403) {
+      result.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:0.85rem;color:var(--mid);margin-bottom:10px;">Compare Books is Pro only</div><button class="apply-it-upgrade-btn" onclick="showPaywall()">Unlock Pro →</button></div>';
+      return;
+    }
+    const d = await res.json();
+    result.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div style="background:#f5f5f7;border-radius:10px;padding:14px;">
+          <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">${d.book1} wins when</div>
+          <div style="font-size:0.82rem;color:#1d1d1f;line-height:1.5;">${d.book1_wins_when}</div>
+        </div>
+        <div style="background:#f5f5f7;border-radius:10px;padding:14px;">
+          <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">${d.book2} wins when</div>
+          <div style="font-size:0.82rem;color:#1d1d1f;line-height:1.5;">${d.book2_wins_when}</div>
+        </div>
+      </div>
+      <div style="background:#1d1d1f;border-radius:10px;padding:14px;margin-bottom:8px;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">Same goal</div>
+        <div style="font-size:0.85rem;color:#fff;line-height:1.5;">${d.same_goal}</div>
+      </div>
+      <div style="background:#1d1d1f;border-radius:10px;padding:14px;margin-bottom:8px;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">Key difference</div>
+        <div style="font-size:0.85rem;color:#fff;line-height:1.5;">${d.key_difference}</div>
+      </div>
+      <div style="background:#1d1d1f;border-radius:10px;padding:14px;margin-bottom:8px;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">⚡ Combined insight</div>
+        <div style="font-size:0.85rem;color:#fff;line-height:1.5;">${d.combined_insight}</div>
+      </div>
+      <div style="background:#b8892a;border-radius:10px;padding:14px;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#000;margin-bottom:6px;">Read first</div>
+        <div style="font-size:0.85rem;color:#000;font-weight:600;line-height:1.5;">${d.read_first}</div>
+      </div>`;
+  } catch(e) { result.innerHTML = '<p style="color:var(--red);font-size:0.82rem;">Comparison failed. Try again.</p>'; }
+}
+
+// ---- FEATURE NAV ----
+function showFeatureNav() {
+  const nav = document.getElementById('featureNav');
+  if (nav) nav.style.display = 'block';
+  // Show compare locked state for free users
+  const locked = document.getElementById('compareLocked');
+  const form = document.getElementById('compareForm');
+  if (locked && form) {
+    if (currentUser && currentUser.isPro) { locked.style.display = 'none'; form.style.display = 'block'; }
+    else { locked.style.display = 'block'; form.style.display = 'none'; }
+  }
+}
+
+function switchFeature(tab) {
+  ['extract','library','compare'].forEach(t => {
+    const btn = document.getElementById('tab-' + t);
+    const panel = document.getElementById('feat-' + t);
+    if (btn) {
+      btn.style.background = t === tab ? '#1d1d1f' : '#fff';
+      btn.style.color = t === tab ? '#fff' : '#6e6e73';
+      btn.style.border = t === tab ? 'none' : '0.5px solid #d2d2d7';
+    }
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'library') loadLibrary();
+}
+
+// ---- LIVE COUNTER ----
+async function loadCounter() {
+  try {
+    const res = await fetch('/stats/counter');
+    const d = await res.json();
+    const el = document.getElementById('liveCounter');
+    if (el && d.extractions > 0) {
+      el.textContent = d.extractions.toLocaleString();
+    }
+  } catch(e) {}
+}
+loadCounter();
+
+// Prefill book from SEO page
+(function() {
+  const prefill = localStorage.getItem('prefill_book');
+  if (prefill) {
+    localStorage.removeItem('prefill_book');
+    const input = document.getElementById('bookInput');
+    if (input) { input.value = prefill; setTimeout(() => tryExtract(prefill), 500); }
+  }
+  // Also handle ?ref= param for referrals
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get('ref');
+  if (ref) {
+    localStorage.setItem('pending_ref', ref);
+    history.replaceState({}, '', '/');
+  }
+})();
+
+// ---- STREAK ----
+async function loadStreak() {
+  const token = localStorage.getItem('ss_token');
+  if (!token) return;
+  try {
+    const res = await fetch('/streak', { headers: { Authorization: `Bearer ${token}` } });
+    const d = await res.json();
+    const badge = document.getElementById('streakBadge');
+    const count = document.getElementById('streakCount');
+    if (badge && d.current > 0) {
+      count.textContent = d.current;
+      badge.style.display = 'block';
+    }
+  } catch(e) {}
+}
+
+// ---- REFERRAL ----
+async function generateReferral() {
+  const token = localStorage.getItem('ss_token');
+  const result = document.getElementById('referralResult');
+  try {
+    const res = await fetch('/referral/generate', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+    const d = await res.json();
+    const link = `${window.location.origin}?ref=${d.code}`;
+    result.innerHTML = `<div style="background:#f5f5f7;border-radius:10px;padding:12px 14px;margin-top:4px;">
+      <div style="font-size:0.7rem;color:#6e6e73;margin-bottom:6px;">Your referral link</div>
+      <div style="font-size:0.82rem;font-weight:600;word-break:break-all;margin-bottom:10px;">${link}</div>
+      <button onclick="navigator.clipboard.writeText('${link}').then(()=>this.textContent='✓ Copied!')" style="background:#1d1d1f;color:#fff;border:none;border-radius:20px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;">Copy Link</button>
+    </div>`;
+  } catch(e) { result.innerHTML = '<p style="color:red;font-size:0.8rem;">Failed. Try again.</p>'; }
+}
+
+async function useReferral() {
+  const token = localStorage.getItem('ss_token');
+  const code = document.getElementById('referralCodeInput').value.trim();
+  const result = document.getElementById('referralUseResult');
+  if (!code) return;
+  try {
+    const res = await fetch('/referral/use', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ code })
+    });
+    const d = await res.json();
+    if (d.success) {
+      result.style.color = '#1a9e5c';
+      result.textContent = '🎉 ' + d.message;
+      setTimeout(() => window.location.reload(), 2000);
+    } else {
+      result.style.color = '#e05555';
+      result.textContent = d.error || 'Invalid code';
+    }
+  } catch(e) { result.style.color = '#e05555'; result.textContent = 'Failed. Try again.'; }
+}
+
+// Check referral code on load
+(async function checkRefOnLoad() {
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get('ref');
+  if (ref) localStorage.setItem('pending_ref', ref);
+})();
+
+// ---- TEAM ----
+async function loadTeam() {
+  const token = localStorage.getItem('ss_token');
+  const container = document.getElementById('teamContent');
+  try {
+    const res = await fetch('/team', { headers: { Authorization: `Bearer ${token}` } });
+    const d = await res.json();
+    if (!d.team) {
+      container.innerHTML = `<div>
+        <input type="text" id="teamName" placeholder="Team name" style="width:100%;background:#f5f5f7;border:0.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;margin-bottom:12px;"/>
+        <button onclick="createTeam()" style="background:#1d1d1f;color:#fff;border:none;border-radius:20px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;width:100%;">Create Team →</button>
+        <p style="font-size:0.75rem;color:#6e6e73;margin-top:10px;text-align:center;">Team plan billing coming soon. Set up your team now.</p>
+      </div>`;
+      return;
+    }
+    const members = d.members || [];
+    container.innerHTML = `<div>
+      <div style="font-size:0.85rem;font-weight:600;margin-bottom:12px;">${d.team.name} · ${members.length}/${d.team.seats} seats</div>
+      ${members.map(m => `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid #f0f0f0;font-size:0.82rem;">${m.email || m.invited_email || 'Member'} ${m.joined ? '<span style="color:#1a9e5c;font-size:0.7rem;">✓ Active</span>' : '<span style="color:#6e6e73;font-size:0.7rem;">Invited</span>'}</div>`).join('')}
+      <div style="margin-top:16px;display:flex;gap:8px;">
+        <input type="email" id="inviteEmail" placeholder="Invite by email" style="flex:1;background:#f5f5f7;border:0.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;"/>
+        <button onclick="inviteMember()" style="background:#b8892a;color:#000;border:none;border-radius:20px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;">Invite</button>
+      </div>
+    </div>`;
+  } catch(e) { container.innerHTML = '<p style="color:red;font-size:0.8rem;">Failed to load team.</p>'; }
+}
+
+async function createTeam() {
+  const token = localStorage.getItem('ss_token');
+  const name = document.getElementById('teamName')?.value || 'My Team';
+  try {
+    await fetch('/team/create', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ name }) });
+    loadTeam();
+  } catch(e) {}
+}
+
+async function inviteMember() {
+  const token = localStorage.getItem('ss_token');
+  const email = document.getElementById('inviteEmail')?.value;
+  if (!email) return;
+  try {
+    const res = await fetch('/team/invite', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ email }) });
+    const d = await res.json();
+    if (d.success) loadTeam();
+  } catch(e) {}
+}
+
+// ---- UPDATED SWITCH FEATURE (includes new tabs) ----
+function switchFeature(tab) {
+  ['extract','library','compare','referral','team'].forEach(t => {
+    const btn = document.getElementById('tab-' + t);
+    const panel = document.getElementById('feat-' + t);
+    if (btn) {
+      btn.style.background = t === tab ? '#1d1d1f' : '#fff';
+      btn.style.color = t === tab ? '#fff' : '#6e6e73';
+      btn.style.border = t === tab ? 'none' : '0.5px solid #d2d2d7';
+    }
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'library') loadLibrary();
+  if (tab === 'team') loadTeam();
+}
+
+function showFeatureNav() {
+  const nav = document.getElementById('featureNav');
+  if (nav) nav.style.display = 'block';
+  const locked = document.getElementById('compareLocked');
+  const form = document.getElementById('compareForm');
+  if (locked && form) {
+    if (currentUser && currentUser.isPro) { locked.style.display = 'none'; form.style.display = 'block'; }
+    else { locked.style.display = 'block'; form.style.display = 'none'; }
+  }
+  switchFeature('extract');
+  loadStreak();
+}
+
+// Keyboard enter on auth
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('authModal').classList.contains('show')) submitAuth();
+});
+
+init();
+</script>
+</body>
+</html>
