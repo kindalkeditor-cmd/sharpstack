@@ -223,6 +223,7 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
   <div class="nav-inner">
     <div class="logo">Sharp<em>-Stack</em></div>
     <div class="nav-right">
+      <a href="/books.html" style="font-size:0.82rem;color:#6e6e73;text-decoration:none;">All Books</a>
       <div class="nav-pro" id="proBadge">⭐ Pro</div>
       <span class="nav-user" id="navUser"></span>
       <button class="btn btn-outline" id="loginBtn" onclick="showAuth('login')">Log in</button>
@@ -267,9 +268,9 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
     <div><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
     <div><div class="proof-num">60s</div><div class="proof-label">insights out</div></div>
     <div><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
-    <div><div class="proof-num">$0</div><div class="proof-label">to start</div></div>
+    <div><div class="proof-num" id="liveCounter">—</div><div class="proof-label">books extracted</div></div>
     <div><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
-    <div><div class="proof-num">$9</div><div class="proof-label">to go unlimited</div></div>
+    <div><div class="proof-num">$0</div><div class="proof-label">to start</div></div>
   </div>
 </div>
 
@@ -299,10 +300,15 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
     </div>
     <div class="result-wrap"><div id="output"></div></div>
     <div id="featureNav" style="display:none;margin-top:32px;max-width:800px;margin-left:auto;margin-right:auto;">
-      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;border-bottom:0.5px solid #d2d2d7;padding-bottom:12px;">
-        <button id="tab-extract" onclick="switchFeature('extract')" style="background:#1d1d1f;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">⚡ Extract</button>
-        <button id="tab-library" onclick="switchFeature('library')" style="background:#fff;color:#6e6e73;border:0.5px solid #d2d2d7;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">📚 My Library</button>
-        <button id="tab-compare" onclick="switchFeature('compare')" style="background:#fff;color:#6e6e73;border:0.5px solid #d2d2d7;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">⚖️ Compare Books</button>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;border-bottom:0.5px solid #d2d2d7;padding-bottom:12px;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button id="tab-extract" onclick="switchFeature('extract')" style="background:#1d1d1f;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">⚡ Extract</button>
+          <button id="tab-library" onclick="switchFeature('library')" style="background:#fff;color:#6e6e73;border:0.5px solid #d2d2d7;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">📚 My Library</button>
+          <button id="tab-compare" onclick="switchFeature('compare')" style="background:#fff;color:#6e6e73;border:0.5px solid #d2d2d7;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">⚖️ Compare Books</button>
+          <button id="tab-referral" onclick="switchFeature('referral')" style="background:#fff;color:#6e6e73;border:0.5px solid #d2d2d7;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">🎁 Refer & Earn</button>
+          <button id="tab-team" onclick="switchFeature('team')" style="background:#fff;color:#6e6e73;border:0.5px solid #d2d2d7;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">👥 Team</button>
+        </div>
+        <div id="streakBadge" style="display:none;background:#fdf6e8;border:1px solid rgba(184,137,42,0.3);border-radius:20px;padding:6px 14px;font-size:0.78rem;color:#b8892a;font-weight:600;">🔥 <span id="streakCount">0</span> day streak</div>
       </div>
       <div id="feat-library" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
@@ -310,6 +316,29 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
           <input type="text" id="libSearch" placeholder="Search library..." oninput="loadLibrary()" style="background:#f5f5f7;border:0.5px solid #d2d2d7;border-radius:10px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:#1d1d1f;outline:none;max-width:220px;"/>
         </div>
         <div id="libGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
+      </div>
+      <div id="feat-referral" style="display:none;">
+        <div style="background:#fff;border:0.5px solid #d2d2d7;border-radius:14px;padding:24px;max-width:500px;">
+          <div style="font-size:1rem;font-weight:700;margin-bottom:6px;">🎁 Refer a Friend — Both Get 1 Month Free</div>
+          <div style="font-size:0.82rem;color:#6e6e73;margin-bottom:20px;">Share your unique link. When a friend signs up and extracts their first book, you both unlock 30 days of Pro for free.</div>
+          <button onclick="generateReferral()" style="background:#1d1d1f;color:#fff;border:none;border-radius:20px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;width:100%;margin-bottom:12px;">Generate My Referral Link →</button>
+          <div id="referralResult"></div>
+          <div style="border-top:0.5px solid #d2d2d7;margin-top:20px;padding-top:16px;">
+            <div style="font-size:0.82rem;font-weight:600;margin-bottom:8px;">Got a referral code?</div>
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="referralCodeInput" placeholder="Enter code" style="flex:1;background:#f5f5f7;border:0.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;"/>
+              <button onclick="useReferral()" style="background:#b8892a;color:#000;border:none;border-radius:20px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;">Apply</button>
+            </div>
+            <div id="referralUseResult" style="margin-top:8px;font-size:0.78rem;"></div>
+          </div>
+        </div>
+      </div>
+      <div id="feat-team" style="display:none;">
+        <div style="background:#fff;border:0.5px solid #d2d2d7;border-radius:14px;padding:24px;">
+          <div style="font-size:1rem;font-weight:700;margin-bottom:6px;">👥 Team Plan — $29/month for 5 seats</div>
+          <div style="font-size:0.82rem;color:#6e6e73;margin-bottom:20px;">Give your whole team the unfair reading advantage. Shared library, all extractions, one bill.</div>
+          <div id="teamContent"><button onclick="loadTeam()" style="background:#1d1d1f;color:#fff;border:none;border-radius:20px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">Set Up Team →</button></div>
+        </div>
       </div>
       <div id="feat-compare" style="display:none;">
         <div style="background:#fff;border:0.5px solid #d2d2d7;border-radius:14px;padding:20px;">
@@ -835,95 +864,4 @@ async function loadTrending() {
     const res = await fetch('/trending');
     const data = await res.json();
     const wrap = document.getElementById('trendingWrap');
-    const chips = document.getElementById('trendingChips');
-    if (!data.trending || data.trending.length === 0) return;
-    chips.innerHTML = data.trending.map(t => `<div onclick="tryExtract('${t.title}')" style="background:#f5f5f7;border:0.5px solid #d2d2d7;border-radius:20px;padding:6px 14px;font-size:0.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">${t.title} <span style="font-size:0.65rem;color:#6e6e73;">· ${t.count}</span></div>`).join('');
-    wrap.style.display = 'block';
-  } catch(e) {}
-}
-
-// ---- COMPARE BOOKS ----
-async function compareBooks() {
-  const book1 = document.getElementById('cBook1').value.trim();
-  const book2 = document.getElementById('cBook2').value.trim();
-  if (!book1 || !book2) return;
-  const token = localStorage.getItem('ss_token');
-  const result = document.getElementById('compareResult');
-  result.innerHTML = '<p style="color:var(--mid);font-size:0.82rem;">Comparing — this takes a few seconds...</p>';
-  try {
-    const res = await fetch('/compare', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ book1, book2 })
-    });
-    if (res.status === 403) {
-      result.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:0.85rem;color:var(--mid);margin-bottom:10px;">Compare Books is Pro only</div><button class="apply-it-upgrade-btn" onclick="showPaywall()">Unlock Pro →</button></div>';
-      return;
-    }
-    const d = await res.json();
-    result.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-        <div style="background:#f5f5f7;border-radius:10px;padding:14px;">
-          <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">${d.book1} wins when</div>
-          <div style="font-size:0.82rem;color:#1d1d1f;line-height:1.5;">${d.book1_wins_when}</div>
-        </div>
-        <div style="background:#f5f5f7;border-radius:10px;padding:14px;">
-          <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">${d.book2} wins when</div>
-          <div style="font-size:0.82rem;color:#1d1d1f;line-height:1.5;">${d.book2_wins_when}</div>
-        </div>
-      </div>
-      <div style="background:#1d1d1f;border-radius:10px;padding:14px;margin-bottom:8px;">
-        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">Same goal</div>
-        <div style="font-size:0.85rem;color:#fff;line-height:1.5;">${d.same_goal}</div>
-      </div>
-      <div style="background:#1d1d1f;border-radius:10px;padding:14px;margin-bottom:8px;">
-        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">Key difference</div>
-        <div style="font-size:0.85rem;color:#fff;line-height:1.5;">${d.key_difference}</div>
-      </div>
-      <div style="background:#1d1d1f;border-radius:10px;padding:14px;margin-bottom:8px;">
-        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8892a;margin-bottom:6px;">⚡ Combined insight</div>
-        <div style="font-size:0.85rem;color:#fff;line-height:1.5;">${d.combined_insight}</div>
-      </div>
-      <div style="background:#b8892a;border-radius:10px;padding:14px;">
-        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#000;margin-bottom:6px;">Read first</div>
-        <div style="font-size:0.85rem;color:#000;font-weight:600;line-height:1.5;">${d.read_first}</div>
-      </div>`;
-  } catch(e) { result.innerHTML = '<p style="color:var(--red);font-size:0.82rem;">Comparison failed. Try again.</p>'; }
-}
-
-// ---- FEATURE NAV ----
-function showFeatureNav() {
-  const nav = document.getElementById('featureNav');
-  if (nav) nav.style.display = 'block';
-  // Show compare locked state for free users
-  const locked = document.getElementById('compareLocked');
-  const form = document.getElementById('compareForm');
-  if (locked && form) {
-    if (currentUser && currentUser.isPro) { locked.style.display = 'none'; form.style.display = 'block'; }
-    else { locked.style.display = 'block'; form.style.display = 'none'; }
-  }
-}
-
-function switchFeature(tab) {
-  ['extract','library','compare'].forEach(t => {
-    const btn = document.getElementById('tab-' + t);
-    const panel = document.getElementById('feat-' + t);
-    if (btn) {
-      btn.style.background = t === tab ? '#1d1d1f' : '#fff';
-      btn.style.color = t === tab ? '#fff' : '#6e6e73';
-      btn.style.border = t === tab ? 'none' : '0.5px solid #d2d2d7';
-    }
-    if (panel) panel.style.display = t === tab ? 'block' : 'none';
-  });
-  if (tab === 'library') loadLibrary();
-}
-
-// Keyboard enter on auth
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('authModal').classList.contains('show')) submitAuth();
-});
-
-init();
-</script>
-</body>
-</html>
+    const chips 
