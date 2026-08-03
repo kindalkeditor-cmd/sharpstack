@@ -346,6 +346,7 @@ app.get('/stats/counter', async (req, res) => {
 app.get('/streak', authMiddleware, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'login_required' });
   try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS streaks (user_id INTEGER PRIMARY KEY REFERENCES users(id), current_streak INTEGER DEFAULT 0, last_extraction_date DATE, longest_streak INTEGER DEFAULT 0)`);
     const result = await pool.query('SELECT * FROM streaks WHERE user_id=$1', [req.user.id]);
     if (!result.rows.length) return res.json({ current: 0, longest: 0 });
     const s = result.rows[0];
@@ -379,12 +380,18 @@ async function updateStreak(userId) {
 app.post('/referral/generate', authMiddleware, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'login_required' });
   try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS referrals (
+      id SERIAL PRIMARY KEY, referrer_id INTEGER REFERENCES users(id),
+      referred_email VARCHAR(255), code VARCHAR(32) UNIQUE,
+      used BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW()
+    )`);
     const existing = await pool.query('SELECT code FROM referrals WHERE referrer_id=$1 AND used=false LIMIT 1', [req.user.id]);
     if (existing.rows.length) return res.json({ code: existing.rows[0].code });
-    const code = require('crypto').randomBytes(6).toString('hex');
+    const crypto = require('crypto');
+    const code = crypto.randomBytes(6).toString('hex');
     await pool.query('INSERT INTO referrals (referrer_id, code) VALUES ($1,$2)', [req.user.id, code]);
     res.json({ code });
-  } catch(e) { res.status(500).json({ error: 'Failed' }); }
+  } catch(e) { console.error('Referral error:', e); res.status(500).json({ error: 'Failed' }); }
 });
 
 app.post('/referral/use', authMiddleware, async (req, res) => {
@@ -408,6 +415,8 @@ app.post('/team/create', authMiddleware, async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'login_required' });
   const { name } = req.body;
   try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS teams (id SERIAL PRIMARY KEY, name VARCHAR(255), owner_id INTEGER REFERENCES users(id), stripe_subscription_id VARCHAR(255), seats INTEGER DEFAULT 5, created_at TIMESTAMP DEFAULT NOW())`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS team_members (id SERIAL PRIMARY KEY, team_id INTEGER REFERENCES teams(id), user_id INTEGER REFERENCES users(id), invited_email VARCHAR(255), joined BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW())`);
     const existing = await pool.query('SELECT id FROM teams WHERE owner_id=$1', [req.user.id]);
     if (existing.rows.length) return res.json({ team: existing.rows[0] });
     const result = await pool.query('INSERT INTO teams (name, owner_id) VALUES ($1,$2) RETURNING *', [name || 'My Team', req.user.id]);
