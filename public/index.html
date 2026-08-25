@@ -309,6 +309,10 @@
     <button id="loginBtn" onclick="showAuth('login')" class="ghost" style="font-size:11px;">Log in</button>
     <a href="#" onclick="showAuth('signup'); return false;" class="nav-cta">Try free →</a>
   </nav>
+  <!-- Hidden compatibility elements for JS -->
+  <span id="signupBtn" style="display:none;"></span>
+  <span id="proBadge" style="display:none;"></span>
+  <div id="usageBar" style="display:none;"><span id="usageText"></span><div id="usageFill"></div></div>
   <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
     <span></span><span></span><span></span>
   </button>
@@ -693,28 +697,30 @@ function updateUI(user) {
     navUser.style.display = 'block';
     navUser.textContent = '';
     if (user.isPro) {
-      proBadge.style.display = 'block';
-      usageBar.style.display = 'none';
+      if (proBadge) proBadge.style.display = 'block';
+      if (usageBar) usageBar.style.display = 'none';
+      if (probadgeNew) probadgeNew.style.display = 'inline-block';
     } else {
       updateUsageBar(user.remaining);
     }
   } else {
-    loginBtn.style.display = 'block';
-    signupBtn.style.display = 'block';
-    logoutBtn.style.display = 'none';
-    navUser.style.display = 'none';
-    proBadge.style.display = 'none';
-    document.getElementById('usageText').textContent = 'Sign up free to get 3 extractions';
-    document.getElementById('usageFill').style.width = '100%';
+    if (loginBtn) loginBtn.style.display = 'block';
+    if (signupBtn) signupBtn.style.display = 'block';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    if (navUser) navUser.style.display = 'none';
+    if (proBadge) proBadge.style.display = 'none';
+    if (probadgeNew) probadgeNew.style.display = 'none';
+    const ut = document.getElementById('usageText'); if (ut) ut.textContent = 'Sign up free to get 3 extractions';
+    const uf = document.getElementById('usageFill'); if (uf) uf.style.width = '100%';
   }
 }
 
 function updateUsageBar(remaining) {
   const pct = (remaining / 3) * 100;
-  document.getElementById('usageText').textContent = remaining > 0
+  const usageTextEl = document.getElementById('usageText'); if (usageTextEl) usageTextEl.textContent = remaining > 0
     ? `${remaining} free extraction${remaining===1?'':'s'} remaining`
     : 'Free limit reached — upgrade for unlimited';
-  document.getElementById('usageFill').style.width = pct + '%';
+  const usageFillEl = document.getElementById('usageFill'); if (usageFillEl) usageFillEl.style.width = pct + '%';
   document.getElementById('usageFill').style.background = remaining === 0 ? 'var(--red)' : 'var(--gold)';
 }
 
@@ -836,7 +842,7 @@ async function extract(title) {
 
   const out = document.getElementById('output');
   document.getElementById('goBtn').disabled = true;
-  document.getElementById('extract').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('output')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   out.innerHTML = `<div class="loader"><div class="dots"><span></span><span></span><span></span></div> Extracting insights...</div>`;
 
   try {
