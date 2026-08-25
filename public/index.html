@@ -1,182 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- PASTE THIS CODE RIGHT AFTER THE OPENING <head> TAG IN YOUR index.html -->
-
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-82R9TLQDFG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-82R9TLQDFG');
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sharp-Stack — Stack sharp knowledge. Skip the noise.</title>
-<meta name="description" content="Every great business book distilled to only what matters. No fluff. No stories. Just the edge.">
+<meta name="description" content="Type any business book. Get only what matters in 60 seconds. No fluff, no stories — just the edge you can apply today.">
+<meta property="og:title" content="Sharp-Stack — Stack sharp knowledge. Skip the noise.">
+<meta property="og:description" content="Every business book distilled to only what matters.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--bg:#f5f5f7;--surface:#fff;--border:#d2d2d7;--black:#1d1d1f;--mid:#6e6e73;--gold:#b8892a;--gold-bg:#fdf6e8;--wrap:1200px;--red:#e05;}
-body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--black);}
+  :root{
+    --ink:#17130F; --ink-raised:#221C15; --parchment:#F2EAD9; --parchment-card:#FBF7EC;
+    --parchment-line:#DCD0B4; --gold:#A9812E; --gold-bright:#C89B42; --wax:#7C2D26;
+    --ink-soft:#8A8071; --ink-soft-2:#4A4234; --text-on-ink:#F2EAD9;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{margin:0;padding:0;background:var(--parchment);}
+  body{font-family:'Newsreader', serif; color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display{font-family:'Fraunces', serif;}
+  a{color:inherit;}
+  img{max-width:100%;}
 
-/* NAV */
-nav{border-bottom:0.5px solid var(--border);position:sticky;top:0;background:rgba(245,245,247,0.92);backdrop-filter:blur(16px);z-index:10;}
-.nav-inner{max-width:var(--wrap);margin:0 auto;padding:16px 48px;display:flex;align-items:center;justify-content:space-between;}
-.logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:var(--black);}
-.logo em{font-style:normal;color:var(--gold);}
-.nav-right{display:flex;gap:10px;align-items:center;}
-.nav-pro{background:var(--gold);color:#fff;border:none;padding:6px 14px;border-radius:20px;font-size:0.7rem;display:none;font-family:'DM Sans',sans-serif;}
-.nav-user{font-size:0.75rem;color:var(--mid);display:none;}
-.btn{background:var(--black);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer;transition:opacity 0.2s;}
-.btn:hover{opacity:0.7;}
-.btn-outline{background:transparent;border:0.5px solid var(--border);color:var(--black);}
-.btn-outline:hover{border-color:var(--black);opacity:1;}
-.btn-gold{background:linear-gradient(135deg,#d4a843,var(--gold));color:#fff;}
+  .skip-link{
+    position:absolute; left:-999px; top:0; background:var(--gold); color:var(--ink);
+    padding:12px 20px; z-index:100; font-family:'IBM Plex Mono', monospace; font-size:12px;
+  }
+  .skip-link:focus{left:12px; top:12px;}
 
-/* HERO */
-.hero-section{padding:80px 0;border-bottom:0.5px solid var(--border);}
-.hero-inner{max-width:var(--wrap);margin:0 auto;padding:0 48px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
-.hero-eyebrow{font-size:0.68rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;}
-.hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,4.5vw,5rem);font-weight:900;line-height:1.04;letter-spacing:-2px;margin-bottom:24px;}
-.hero-title em{font-style:italic;color:var(--gold);}
-.hero-sub{font-size:1rem;color:var(--mid);line-height:1.7;margin-bottom:36px;font-weight:300;max-width:420px;}
-.hero-note{margin-top:14px;font-size:0.68rem;color:var(--mid);}
-.hero-right{background:var(--surface);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;}
-.hero-card-head{background:var(--black);padding:22px 24px;}
-.hero-card-badge{font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);border:0.5px solid rgba(184,137,42,0.4);border-radius:8px;padding:3px 10px;display:inline-block;margin-bottom:10px;}
-.hero-card-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#fff;margin-bottom:4px;}
-.hero-card-author{font-size:0.72rem;color:rgba(255,255,255,0.4);}
-.hero-card-body{padding:20px 24px;}
-.hero-core{background:var(--gold-bg);border:0.5px solid rgba(184,137,42,0.2);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
-.hero-core-label{font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
-.hero-core-text{font-size:0.82rem;line-height:1.55;color:var(--black);}
-.hero-point{display:flex;gap:10px;padding:7px 0;border-bottom:0.5px solid #f0f0f2;font-size:0.78rem;color:#3a3a3c;line-height:1.5;}
-.hero-point:last-child{border-bottom:none;}
-.hero-point-num{color:var(--gold);font-size:0.65rem;min-width:18px;padding-top:2px;flex-shrink:0;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
 
-/* PROOF */
-.proof-bar{background:var(--surface);border-bottom:0.5px solid var(--border);}
-.proof-inner{max-width:var(--wrap);margin:0 auto;padding:36px 48px;display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:24px;}
-.proof-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--black);line-height:1;text-align:center;}
-.proof-label{font-size:0.7rem;color:var(--mid);margin-top:4px;text-align:center;}
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity 700ms ease, transform 700ms ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
 
-/* EXTRACT */
-.extract-section{padding:80px 0;}
-.extract-inner{max-width:var(--wrap);margin:0 auto;padding:0 48px;}
-.section-header{text-align:center;margin-bottom:48px;}
-.section-eyebrow{font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
-.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;letter-spacing:-0.8px;color:var(--black);margin-bottom:10px;}
-.section-sub{font-size:0.9rem;color:var(--mid);font-weight:300;max-width:440px;margin:0 auto;}
+  /* HEADER */
+  header{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 48px; background:rgba(242,234,217,0.94);
+    border-bottom:1px solid var(--parchment-line); backdrop-filter:blur(6px);
+    transition:padding 200ms ease;
+  }
+  header.scrolled{padding:14px 48px;}
+  .wordmark{font-family:'IBM Plex Mono', monospace; letter-spacing:0.08em; font-size:13px; font-weight:500; text-transform:uppercase;}
+  .wordmark span{color:var(--gold);}
+  nav.desktop-nav{display:flex; align-items:center; gap:30px; font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft-2);}
+  nav.desktop-nav a{text-decoration:none;}
+  nav.desktop-nav a:hover{color:var(--gold);}
+  .nav-cta{background:var(--ink); color:var(--parchment); padding:9px 18px; border-radius:2px; font-size:11px;}
 
-.usage-bar{max-width:480px;margin:0 auto 36px;text-align:center;}
-.usage-text{font-size:0.72rem;color:var(--mid);margin-bottom:8px;}
-.usage-track{background:var(--border);border-radius:4px;height:3px;}
-.usage-fill{background:var(--gold);height:3px;border-radius:4px;transition:width 0.4s;}
+  .menu-btn{
+    display:none; background:transparent; border:none; padding:8px; cursor:pointer;
+    flex-direction:column; gap:5px; width:32px;
+  }
+  .menu-btn span{display:block; height:1px; width:100%; background:var(--ink);}
 
-.books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px;}
-.book-card{background:var(--surface);border:0.5px solid var(--border);padding:20px 18px;border-radius:14px;cursor:pointer;transition:box-shadow 0.15s,transform 0.15s;}
-.book-card:hover{box-shadow:0 6px 24px rgba(0,0,0,0.08);transform:translateY(-3px);border-color:#bbb;}
-.book-card-title{font-size:0.82rem;font-weight:500;color:var(--black);margin-bottom:4px;line-height:1.3;}
-.book-card-author{font-size:0.68rem;color:var(--mid);}
+  .mobile-nav{
+    display:none; position:fixed; inset:0; z-index:60; background:var(--ink); color:var(--text-on-ink);
+    padding:24px; flex-direction:column;
+  }
+  .mobile-nav.open{display:flex;}
+  .mobile-nav-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:48px;}
+  .mobile-nav .close-btn{background:transparent; border:none; color:var(--text-on-ink); font-family:'IBM Plex Mono', monospace; font-size:24px; cursor:pointer; padding:4px 8px;}
+  .mobile-nav a{
+    font-family:'Fraunces', serif; font-size:28px; text-decoration:none; color:var(--text-on-ink);
+    padding:16px 0; border-bottom:1px solid #3A3226;
+  }
+  .mobile-nav .nav-cta{margin-top:28px; text-align:center; padding:16px;}
 
-.search-row{display:flex;gap:10px;margin-bottom:48px;max-width:640px;margin-left:auto;margin-right:auto;}
-.search-row input{flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:24px;padding:14px 22px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--black);outline:none;transition:border-color 0.2s;}
-.search-row input:focus{border-color:var(--black);}
-.search-row input::placeholder{color:var(--mid);}
-.search-row button{background:var(--black);color:#fff;border:none;border-radius:24px;padding:14px 28px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;white-space:nowrap;transition:opacity 0.2s;font-weight:500;}
-.search-row button:hover{opacity:0.72;}
-.search-row button:disabled{opacity:0.4;cursor:not-allowed;}
+  /* SHARED CONTROLS */
+  button{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.05em; text-transform:uppercase;
+    background:var(--gold); color:var(--ink); border:none; padding:14px 22px; border-radius:2px;
+    cursor:pointer; transition:transform 120ms ease, background 120ms ease;
+  }
+  button:hover{background:var(--gold-bright);}
+  button:active{transform:scale(0.97);}
+  button:disabled{opacity:0.5; cursor:not-allowed;}
+  button.ghost{background:transparent; border:1px solid var(--ink); color:var(--ink); padding:13px 22px;}
+  button.ghost:hover{background:var(--ink); color:var(--parchment);}
+  button.ghost-dark{background:transparent; border:1px solid #5A503E; color:#CFC6B4;}
+  button.ghost-dark:hover{border-color:var(--gold-bright); color:var(--gold-bright); background:transparent;}
 
-/* RESULT */
-.result-wrap{max-width:800px;margin:0 auto;}
-.loader{display:flex;align-items:center;justify-content:center;gap:10px;padding:56px;color:var(--mid);font-size:0.82rem;}
-.dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.2s ease infinite;margin:0 2px;}
-.dots span:nth-child(2){animation-delay:0.2s;}
-.dots span:nth-child(3){animation-delay:0.4s;}
-.result-card{background:var(--surface);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;animation:fadeUp 0.4s ease both;}
-.result-hero-bar{background:var(--black);padding:32px 36px;position:relative;}
-.result-hero-bar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
-.book-badge{display:inline-block;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);border:0.5px solid rgba(184,137,42,0.4);border-radius:10px;padding:3px 10px;margin-bottom:14px;}
-.book-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:6px;}
-.book-author-txt{font-size:0.78rem;color:rgba(255,255,255,0.4);}
-.result-body{padding:32px 36px;display:grid;grid-template-columns:1fr 1fr;gap:28px;}
-.result-full{grid-column:1/-1;}
-.core-idea{background:var(--gold-bg);border:0.5px solid rgba(184,137,42,0.2);border-radius:12px;padding:18px 20px;}
-.core-label{font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
-.core-text{font-size:0.92rem;line-height:1.6;color:var(--black);}
-.r-section-label{font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--mid);margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid var(--border);}
-.point-row{display:flex;gap:12px;padding:9px 0;border-bottom:0.5px solid #f0f0f2;align-items:flex-start;}
-.point-row:last-child{border-bottom:none;}
-.point-badge{min-width:26px;height:26px;border-radius:50%;background:var(--bg);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.62rem;font-weight:500;color:var(--mid);flex-shrink:0;margin-top:1px;}
-.point-badge.arrow{background:var(--gold-bg);border-color:rgba(184,137,42,0.3);color:var(--gold);font-size:0.8rem;}
-.point-text{font-size:0.82rem;line-height:1.6;color:#3a3a3c;padding-top:2px;}
-.one-liner-wrap{background:var(--black);border-radius:12px;padding:22px 24px;}
-.apply-it-wrap{background:var(--gold-bg);border:1px solid rgba(201,168,76,0.3);border-radius:14px;padding:20px 22px;}
-.apply-it-header{margin-bottom:14px;}
-.apply-it-title{font-size:0.9rem;font-weight:700;color:var(--black);margin-bottom:4px;}
-.apply-it-sub{font-size:0.75rem;color:var(--mid);}
-.apply-it-input{width:100%;background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--black);outline:none;margin-bottom:12px;}
-.apply-it-input:focus{border-color:var(--gold);}
-.apply-it-btn{background:var(--black);color:#fff;border:none;border-radius:20px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;transition:opacity 0.2s;width:100%;}
-.apply-it-btn:hover{opacity:0.75;}
-.apply-it-btn:disabled{opacity:0.4;cursor:not-allowed;}
-.apply-it-locked{background:var(--bg);border:0.5px dashed var(--border);border-radius:14px;padding:18px 20px;}
-.apply-it-upgrade-btn{background:var(--gold);color:#000;border:none;border-radius:20px;padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;}
-.plan-card{margin-top:16px;background:#fff;border-radius:12px;border:0.5px solid var(--border);overflow:hidden;}
-.plan-title{background:var(--black);color:var(--gold);font-size:0.82rem;font-weight:700;padding:12px 16px;letter-spacing:0.05em;}
-.plan-step{padding:14px 16px;border-bottom:0.5px solid var(--border);}
-.plan-step:last-child{border-bottom:none;}
-.plan-step-num{font-size:0.6rem;color:var(--gold);font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:4px;}
-.plan-step-action{font-size:0.85rem;font-weight:600;color:var(--black);margin-bottom:4px;}
-.plan-step-meta{font-size:0.75rem;color:var(--mid);}
-.plan-warning{background:#fff8e7;padding:12px 16px;font-size:0.78rem;color:#b45309;border-top:0.5px solid rgba(201,168,76,0.2);}
-.plan-first{background:var(--black);padding:14px 16px;font-size:0.82rem;color:#fff;}
-.plan-first strong{color:var(--gold);}
-.one-liner-label{font-size:0.56rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px;}
-.one-liner-text{font-family:'Playfair Display',serif;font-style:italic;font-size:1.1rem;color:var(--gold);line-height:1.5;}
+  /* HERO / STAGE */
+  .stage{background:var(--ink); color:var(--text-on-ink); padding:88px 48px 100px;}
+  .stage-grid{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;}
+  .eyebrow{font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); margin:0 0 20px;}
+  h1{font-family:'Fraunces', serif; font-weight:500; font-size:52px; line-height:1.08; margin:0 0 22px; letter-spacing:-0.01em;}
+  h1 em{font-style:italic; font-weight:500; color:var(--gold-bright);}
+  .lede{font-size:18px; line-height:1.6; color:#CFC6B4; max-width:440px; margin:0 0 36px;}
+  .extract-row{display:flex; gap:10px; margin-bottom:10px;}
+  .extract-row input{
+    flex:1; min-width:0; background:var(--ink-raised); border:1px solid #3A3226; color:var(--text-on-ink);
+    font-family:'Newsreader', serif; font-size:16px; padding:14px 16px; border-radius:2px;
+  }
+  .extract-row input:focus{outline:1px solid var(--gold); border-color:var(--gold);}
+  .extract-row input::placeholder{color:#786C57;}
+  .field-error{font-size:12px; color:#D98A6E; margin:6px 0 0; min-height:16px;}
+  .hint{font-size:12px; color:var(--ink-soft); margin:0;}
+  #replay{margin-top:26px; padding:10px 18px;}
+  #replay[hidden]{display:none;}
 
-/* PRICING */
-.price-section{background:var(--surface);padding:80px 0;border-top:0.5px solid var(--border);}
-.price-inner{max-width:var(--wrap);margin:0 auto;padding:0 48px;}
-.toggle-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:40px;}
-.toggle-label{font-size:0.82rem;color:var(--mid);}
-.toggle-label.active{color:var(--black);font-weight:500;}
-.save-badge{background:var(--gold-bg);color:var(--gold);font-size:0.62rem;padding:2px 8px;border-radius:8px;font-weight:500;}
-.toggle{width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;position:relative;transition:background 0.2s;}
-.toggle.on{background:var(--black);}
-.toggle-dot{width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:left 0.2s;}
-.toggle.on .toggle-dot{left:23px;}
-.price-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:640px;margin:0 auto;}
-.pc{background:var(--bg);border:0.5px solid var(--border);padding:32px 28px;border-radius:18px;text-align:center;position:relative;}
-.pc.hot{border-color:var(--gold);background:var(--surface);}
-.hot-tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:0.6rem;padding:3px 14px;border-radius:10px;white-space:nowrap;letter-spacing:0.1em;text-transform:uppercase;}
-.pc-plan{font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--mid);margin-bottom:12px;}
-.pc-price{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:var(--black);line-height:1;}
-.pc-price sub{font-size:0.9rem;font-weight:300;color:var(--mid);}
-.pc-period{font-size:0.68rem;color:var(--mid);margin-bottom:24px;margin-top:4px;}
-.pc-list{list-style:none;text-align:left;margin-bottom:24px;}
-.pc-list li{font-size:0.78rem;color:var(--mid);padding:5px 0;border-bottom:0.5px solid var(--border);display:flex;gap:8px;font-weight:300;}
-.pc-list li::before{content:'→';color:var(--gold);font-size:0.68rem;flex-shrink:0;margin-top:2px;}
-.pc-btn{width:100%;padding:13px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer;border-radius:20px;transition:opacity 0.2s;letter-spacing:0.04em;}
-.pc-btn.light{background:transparent;border:0.5px solid var(--border);color:var(--black);}
-.pc-btn.light:hover{border-color:var(--black);}
-.pc-btn.dark{background:var(--black);border:none;color:#fff;}
-.pc-btn.dark:hover{opacity:0.72;}
+  .book-stage{position:relative; height:440px; display:flex; align-items:center; justify-content:center;}
+  .book{position:relative; width:190px; height:250px; transition:transform 700ms cubic-bezier(.6,0,.4,1), opacity 500ms ease; animation:float 5s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);}}
+  .page{position:absolute; inset:0; background:#EDE3D0; border:1px solid #C9BC9E; border-radius:2px; transition:transform 650ms cubic-bezier(.65,-0.1,.3,1), opacity 500ms ease; transform-origin:top center;}
+  .page .cover-label{position:absolute; left:16px; right:16px; bottom:20px; font-family:'Fraunces', serif; font-weight:500; font-size:15px; color:var(--ink); line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .page .cover-eyebrow{position:absolute; top:18px; left:16px; font-family:'IBM Plex Mono', monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--wax);}
+  .word-particle{position:absolute; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--gold-bright); pointer-events:none; opacity:0; white-space:nowrap;}
+  .card{
+    position:absolute; width:340px; max-width:calc(100% - 24px); background:var(--parchment-card); border-radius:3px; border:1px solid var(--parchment-line);
+    padding:26px 26px 22px; color:var(--ink); opacity:0; transform:scale(0.92);
+    transition:opacity 400ms ease, transform 450ms cubic-bezier(.2,1.1,.3,1);
+  }
+  .card.visible{opacity:1; transform:scale(1);}
+  .seal{position:absolute; top:-16px; right:20px; width:40px; height:40px; border-radius:50%; background:var(--wax); display:flex; align-items:center; justify-content:center; transform:scale(0); transition:transform 420ms cubic-bezier(.17,1.9,.4,1);}
+  .seal.visible{transform:scale(1);}
+  .seal span{color:#E8CBAE; font-family:'Fraunces', serif; font-size:14px; font-style:italic;}
+  .card-eyebrow{font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold);}
+  .card-title{font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:4px 0 14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .core-idea{background:var(--parchment); border-left:2px solid var(--gold); padding:10px 14px; font-size:14px; line-height:1.5; margin-bottom:16px; opacity:0; transform:translateY(6px); transition:opacity 400ms ease, transform 400ms ease;}
+  .core-idea.visible{opacity:1; transform:translateY(0);}
+  .points{list-style:none; margin:0; padding:0;}
+  .points li{display:flex; gap:10px; font-size:13px; line-height:1.5; padding:8px 0; border-top:1px solid var(--parchment-line); opacity:0; transform:translateY(6px); transition:opacity 350ms ease, transform 350ms ease;}
+  .points li.visible{opacity:1; transform:translateY(0);}
+  .points li .num{font-family:'IBM Plex Mono', monospace; color:var(--gold); font-size:11px; padding-top:2px;}
 
-.bottom-cta{padding:100px 0;text-align:center;border-top:0.5px solid var(--border);}
-.bottom-cta h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.6rem);font-weight:900;letter-spacing:-1.5px;margin-bottom:16px;}
-.bottom-cta h2 em{font-style:italic;color:var(--gold);}
-.bottom-cta p{font-size:0.95rem;color:var(--mid);margin-bottom:36px;font-weight:300;}
+  /* STATS */
+  .stats{background:var(--parchment-card); border-bottom:1px solid var(--parchment-line);}
+  .stats-row{max-width:1180px; margin:0 auto; padding:56px 48px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;}
+  .stat{text-align:center;}
+  .stat .num{font-family:'Fraunces', serif; font-weight:500; font-size:34px; display:block;}
+  .stat .label{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft-2); margin-top:4px;}
+  .stat-arrow{color:var(--gold); font-size:18px;}
 
-footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
-.fl{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:900;color:var(--black);}
-.fl em{font-style:normal;color:var(--gold);}
-.fc{font-size:0.68rem;color:var(--mid);}
+  /* SECTIONS */
+  section.block{padding:100px 48px;}
+  .block-inner{max-width:1180px; margin:0 auto;}
+  .section-head{text-align:center; max-width:620px; margin:0 auto 56px;}
+  .section-head h2{font-family:'Fraunces', serif; font-weight:500; font-size:38px; margin:8px 0 14px; line-height:1.15;}
+  .section-head h2 em{font-style:italic; color:var(--gold);}
+  .section-head p{font-size:16px; color:var(--ink-soft-2); line-height:1.6; margin:0;}
+
+  .book-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:1px; background:var(--parchment-line); border:1px solid var(--parchment-line);}
+  .book-card{background:var(--parchment-card); padding:26px 22px; position:relative; cursor:pointer; transition:background 150ms ease; border:none; width:100%; text-align:left; display:block;}
+  .book-card:hover, .book-card:focus-visible{background:#fff;}
+  .book-card .spine{position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--gold-bright);}
+  .book-card .book-title{font-family:'Fraunces', serif; font-weight:500; font-size:17px; margin:0 0 4px; color:var(--ink);}
+  .book-card .book-author{font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-soft-2); text-transform:uppercase; letter-spacing:0.04em;}
+  .book-card .extract-link{display:block; margin-top:16px; font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--gold);}
+
+  .diff-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:48px;}
+  .diff-item{border-top:1px solid var(--parchment-line); padding-top:24px;}
+  .diff-item .diff-num{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--gold); letter-spacing:0.08em;}
+  .diff-item h3{font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:12px 0 12px;}
+  .diff-item p{font-size:15px; line-height:1.65; color:var(--ink-soft-2); margin:0;}
+
+  .pull{background:var(--ink); color:var(--text-on-ink); padding:120px 48px; text-align:center;}
+  .pull blockquote{font-family:'Fraunces', serif; font-style:italic; font-weight:500; font-size:40px; line-height:1.3; max-width:820px; margin:0 auto 24px;}
+  .pull cite{font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-bright); font-style:normal;}
+
+  .pricing-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:28px; max-width:760px; margin:0 auto;}
+  .price-card{background:var(--parchment-card); border:1px solid var(--parchment-line); border-radius:4px; padding:36px 32px; text-align:center; position:relative;}
+  .price-card.featured{border:1px solid var(--gold);}
+  .badge{position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--gold); color:var(--ink); font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; padding:5px 14px; border-radius:2px;}
+  .tier{font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft-2);}
+  .price{font-family:'Fraunces', serif; font-weight:500; font-size:44px; margin:14px 0 2px;}
+  .price .per{font-family:'Newsreader', serif; font-size:16px; color:var(--ink-soft-2);}
+  .billing{font-size:13px; color:var(--ink-soft-2); margin:0 0 24px;}
+  .features{list-style:none; padding:0; margin:0 0 28px; text-align:left;}
+  .features li{font-size:14px; padding:9px 0; border-top:1px solid var(--parchment-line); display:flex; gap:8px;}
+  .features li:first-child{border-top:none;}
+  .features li:before{content:"→"; color:var(--gold);}
+  .price-card button{width:100%;}
+  .price-card.featured button{background:var(--ink); color:var(--parchment);}
+  .price-card.featured button:hover{background:#000;}
+
+  /* FAQ */
+  .faq{max-width:720px; margin:0 auto;}
+  .faq-item{border-top:1px solid var(--parchment-line); padding:22px 0;}
+  .faq-item:last-child{border-bottom:1px solid var(--parchment-line);}
+  .faq-item summary{
+    font-family:'Fraunces', serif; font-size:18px; font-weight:500; cursor:pointer;
+    list-style:none; display:flex; justify-content:space-between; align-items:center;
+  }
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary:after{content:"+"; font-family:'IBM Plex Mono', monospace; color:var(--gold); font-size:20px; margin-left:16px;}
+  .faq-item[open] summary:after{content:"−";}
+  .faq-item p{font-size:15px; line-height:1.65; color:var(--ink-soft-2); margin:14px 0 0;}
+
+  footer{background:var(--ink); color:var(--text-on-ink); text-align:center; padding:110px 48px 60px;}
+  footer h2{font-family:'Fraunces', serif; font-weight:500; font-size:44px; margin:0 0 8px; line-height:1.15;}
+  footer h2 em{font-style:italic; color:var(--gold-bright);}
+  footer .foot-lede{color:#CFC6B4; font-size:16px; margin:0 0 34px;}
+  .foot-bottom{margin-top:90px; padding-top:28px; border-top:1px solid #3A3226; display:flex; justify-content:space-between; align-items:center; font-family:'IBM Plex Mono', monospace; font-size:11px; color:#786C57; flex-wrap:wrap; gap:12px;}
+
+  @media (max-width: 880px){
+    header{padding:18px 24px;}
+    nav.desktop-nav{display:none;}
+    .menu-btn{display:flex;}
+    .stage{padding:56px 24px 72px;}
+    .stage-grid{grid-template-columns:1fr; gap:56px;}
+    h1{font-size:36px;}
+    .stats-row{padding:40px 24px; justify-content:center;}
+    section.block{padding:72px 24px;}
+    .diff-grid{grid-template-columns:1fr; gap:32px;}
+    .pricing-grid{grid-template-columns:1fr;}
+    .pull{padding:80px 24px;}
+    .pull blockquote{font-size:28px;}
+    footer{padding:72px 24px 40px;}
+    footer h2{font-size:30px;}
+    .foot-bottom{flex-direction:column; text-align:center;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .book{animation:none;}
+    html{scroll-behavior:auto;}
+    .book, .page, .card, .seal, .core-idea, .points li, .reveal{transition-duration:150ms !important;}
+  }
+
+/* ── FUNCTIONAL ADDITIONS ── */
+.visually-hidden{position:absolute;left:-9999px;}
 
 /* AUTH MODAL */
+
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .modal-overlay.show{opacity:1;pointer-events:all;}
 .modal{background:var(--surface);border-radius:24px;padding:40px 36px;max-width:420px;width:100%;text-align:center;animation:fadeUp 0.3s ease both;}
@@ -215,91 +265,226 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
 }
 @keyframes pulse{0%,80%,100%{transform:scale(0.6);opacity:0.4;}40%{transform:scale(1);opacity:1;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* Additional feature styles */
+.apply-it-wrap{background:#fdf6e8;border:1px solid rgba(169,129,46,0.3);border-radius:14px;padding:20px 22px;margin-bottom:16px;}
+.apply-it-title{font-size:0.9rem;font-weight:700;color:var(--ink);margin-bottom:4px;font-family:"Fraunces",serif;}
+.apply-it-sub{font-size:0.75rem;color:var(--ink-soft-2);margin-bottom:14px;}
+.apply-it-input{width:100%;background:var(--parchment);border:1px solid var(--parchment-line);border-radius:2px;padding:11px 14px;font-family:"Newsreader",serif;font-size:0.88rem;color:var(--ink);outline:none;margin-bottom:12px;}
+.apply-it-input:focus{border-color:var(--gold);}
+.plan-card{margin-top:16px;background:var(--parchment-card);border-radius:4px;border:1px solid var(--parchment-line);overflow:hidden;}
+.plan-title{background:var(--ink);color:var(--gold);font-size:0.82rem;font-weight:700;padding:12px 16px;letter-spacing:0.05em;font-family:"IBM Plex Mono",monospace;}
+.plan-step{padding:14px 16px;border-bottom:1px solid var(--parchment-line);}
+.plan-step:last-child{border-bottom:none;}
+.plan-step-num{font-size:0.6rem;color:var(--gold);font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:4px;font-family:"IBM Plex Mono",monospace;}
+.plan-step-action{font-size:0.85rem;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.plan-step-meta{font-size:0.75rem;color:var(--ink-soft-2);}
+.plan-warning{background:#fff8e7;padding:12px 16px;font-size:0.78rem;color:#b45309;}
+.plan-first{background:var(--ink);padding:14px 16px;font-size:0.82rem;color:var(--parchment);}
+.plan-first strong{color:var(--gold);}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:20px;}
+.lib-empty{text-align:center;padding:60px 20px;color:var(--ink-soft-2);font-size:0.85rem;}
+.feat-btn{background:var(--parchment-card);border:1px solid var(--parchment-line);border-radius:2px;padding:8px 18px;font-family:"IBM Plex Mono",monospace;font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft-2);cursor:pointer;transition:all 0.15s;}
+.feat-btn:hover{border-color:var(--gold);color:var(--gold);background:transparent;}
+.compare-inputs{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.compare-input{flex:1;min-width:140px;background:var(--parchment);border:1px solid var(--parchment-line);border-radius:2px;padding:10px 14px;font-family:"Newsreader",serif;font-size:0.88rem;color:var(--ink);outline:none;}
+.compare-input:focus{border-color:var(--gold);}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-inner">
-    <div class="logo">Sharp<em>-Stack</em></div>
-    <div class="nav-right">
-      <a href="/books.html" style="font-size:0.82rem;color:#6e6e73;text-decoration:none;">All Books</a>
-      <div class="nav-pro" id="proBadge">⭐ Pro</div>
-      <span class="nav-user" id="navUser"></span>
-      <button class="btn btn-outline" id="loginBtn" onclick="showAuth('login')">Log in</button>
-      <button class="btn" id="signupBtn" onclick="showAuth('signup')">Try free →</button>
-      <button class="btn btn-outline" id="logoutBtn" onclick="logout()" style="display:none">Log out</button>
-    </div>
-  </div>
-</nav>
+<a href="#main" class="skip-link">Skip to content</a>
 
-<div class="hero-section">
-  <div class="hero-inner">
+<header id="siteHeader">
+  <div class="wordmark">Sharp<span>-</span>Stack</div>
+  <nav class="desktop-nav" aria-label="Primary">
+    <a href="/books.html">All books</a>
+    <a href="#pricing">Pricing</a>
+    <span id="navUser" style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft-2);"></span>
+    <span id="probadge" style="display:none;background:var(--gold);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:2px;">⭐ Pro</span>
+    <button id="logoutBtn" onclick="logout()" style="display:none;background:transparent;border:1px solid var(--parchment-line);color:var(--ink-soft-2);padding:9px 18px;font-size:11px;" class="ghost">Log out</button>
+    <button id="loginBtn" onclick="showAuth('login')" class="ghost" style="font-size:11px;">Log in</button>
+    <a href="#" onclick="showAuth('signup'); return false;" class="nav-cta">Try free →</a>
+  </nav>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Menu">
+  <div class="mobile-nav-top">
+    <div class="wordmark">Sharp<span>-</span>Stack</div>
+    <button class="close-btn" id="closeMenuBtn" aria-label="Close menu">&times;</button>
+  </div>
+  <a href="#books">All books</a>
+  <a href="#pricing">Pricing</a>
+  <a href="#">Log in</a>
+  <button class="nav-cta">Try free →</button>
+</div>
+
+<main id="main">
+<section class="stage">
+  <div class="stage-grid">
     <div>
-      <div class="hero-eyebrow">The unfair reading advantage</div>
-      <h1 class="hero-title">Stack sharp knowledge.<br><em>Skip the noise.</em></h1>
-      <p class="hero-sub">Type any business book. Get only what matters. No fluff, no stories — just the edge you can apply today.</p>
-      <button class="btn" onclick="document.getElementById('extract').scrollIntoView({behavior:'smooth'})">Extract your first book free →</button>
-      <p class="hero-note">Free · No credit card · 60 seconds</p>
-    </div>
-    <div class="hero-right">
-      <div class="hero-card-head">
-        <div class="hero-card-badge">Sharp Extract</div>
-        <div class="hero-card-title">Atomic Habits</div>
-        <div class="hero-card-author">James Clear</div>
+      <p class="eyebrow">The unfair reading advantage</p>
+      <h1>Stack sharp<br>knowledge. <em>Skip the noise.</em></h1>
+      <p class="lede">Type any business book. Get only what matters. No fluff, no stories — just the edge you can apply today.</p>
+      <div class="extract-row" style="margin-bottom:8px;">
+        <label for="bookInput" class="visually-hidden">Book title</label>
+        <input id="bookInput" type="text" placeholder="Type any book title..." autocomplete="off" onkeydown="if(event.key==='Enter')tryExtract(this.value)" style="flex:1;min-width:0;background:var(--ink-raised);border:1px solid #3A3226;color:var(--text-on-ink);font-family:'Newsreader',serif;font-size:16px;padding:14px 16px;border-radius:2px;outline:none;">
+        <button id="goBtn" onclick="tryExtract(document.getElementById('bookInput').value)" style="background:var(--gold);color:var(--ink);">Extract →</button>
       </div>
-      <div class="hero-card-body">
-        <div class="hero-core">
-          <div class="hero-core-label">Core Idea</div>
-          <div class="hero-core-text">Tiny 1% improvements compound into remarkable results — systems beat goals every time.</div>
+      <p class="hint">Free · No credit card · 60 seconds</p>
+      <div id="output" style="margin-top:24px;"></div>
+    </div>
+
+    <div class="book-stage" id="bookStage">
+      <div class="book" id="book">
+        <div class="page" style="transform:rotate(-2deg) translate(-3px,3px)"></div>
+        <div class="page" style="transform:rotate(1.5deg) translate(2px,2px)"></div>
+        <div class="page" style="transform:rotate(-1deg) translate(-1px,1px)"></div>
+        <div class="page" id="frontPage">
+          <div class="cover-eyebrow">Sharp Extract</div>
+          <div class="cover-label" id="coverLabel">Atomic Habits</div>
         </div>
-        <div class="hero-point"><span class="hero-point-num">01</span>You don't rise to goals — you fall to your systems</div>
-        <div class="hero-point"><span class="hero-point-num">02</span>Identity drives behavior. Become the person first</div>
-        <div class="hero-point"><span class="hero-point-num">03</span>Make habits obvious, attractive, easy, satisfying</div>
-        <div class="hero-point"><span class="hero-point-num">04</span>Never miss twice — one slip is an accident</div>
+      </div>
+
+      <div class="card" id="card" role="region" aria-label="Book extraction result">
+        <div class="seal" id="seal" aria-hidden="true"><span>S</span></div>
+        <div class="card-eyebrow">Sharp Extract</div>
+        <div class="card-title" id="cardTitle">Atomic Habits</div>
+        <div class="core-idea" id="coreIdea">Tiny 1% improvements compound into remarkable results — systems beat goals every time.</div>
+        <ul class="points" id="points">
+          <li><span class="num">01</span><span>You don't rise to goals — you fall to your systems</span></li>
+          <li><span class="num">02</span><span>Identity drives behavior. Become the person first</span></li>
+          <li><span class="num">03</span><span>Make habits obvious, attractive, easy, satisfying</span></li>
+          <li><span class="num">04</span><span>Never miss twice — one slip is an accident</span></li>
+        </ul>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<div class="proof-bar">
-  <div class="proof-inner">
-    <div><div class="proof-num">300</div><div class="proof-label">pages in</div></div>
-    <div><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
-    <div><div class="proof-num">60s</div><div class="proof-label">insights out</div></div>
-    <div><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
-    <div><div class="proof-num" id="liveCounter">—</div><div class="proof-label">books extracted</div></div>
-    <div><div class="proof-num" style="color:var(--gold)">→</div><div class="proof-label">&nbsp;</div></div>
-    <div><div class="proof-num">$0</div><div class="proof-label">to start</div></div>
+<div class="stats">
+  <div class="stats-row">
+    <div class="stat"><span class="num display">300</span><span class="label">pages in</span></div>
+    <span class="stat-arrow" aria-hidden="true">→</span>
+    <div class="stat"><span class="num display">60s</span><span class="label">insights out</span></div>
+    <span class="stat-arrow" aria-hidden="true">→</span>
+    <div class="stat"><span class="num display">Free</span><span class="label">to start</span></div>
   </div>
 </div>
 
-<div id="extract" class="extract-section">
-  <div class="extract-inner">
-    <div class="section-header">
-      <div class="section-eyebrow">Try it now</div>
-      <h2 class="section-title">Pick a book. Get the edge.</h2>
-      <p class="section-sub">Click any book or type your own. Results in 60 seconds.</p>
+<section class="block" id="books">
+  <div class="block-inner">
+    <div class="section-head reveal">
+      <p class="eyebrow" style="color:var(--gold); text-align:center;">Pick a book</p>
+      <h2>Or type the one <em>you're actually stuck on.</em></h2>
+      <p>Trending among founders this week. Click one, or type a title we've never seen.</p>
     </div>
-    <div class="usage-bar" id="usageBar">
-      <div class="usage-text" id="usageText">Sign up free to get 3 extractions</div>
-      <div class="usage-track"><div class="usage-fill" id="usageFill" style="width:100%"></div></div>
+    <div id="trendingWrap" style="display:none;margin-bottom:20px;background:var(--parchment-card);border:1px solid var(--parchment-line);border-radius:4px;padding:16px 20px;"><div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-soft-2);margin-bottom:12px;">🔥 Trending Among Founders This Week</div><div id="trendingChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div></div>
+    <div class="book-grid reveal">
+      <button class="book-card" onclick="tryExtract('Atomic Habits')"><div class="spine"></div><div class="book-title">Atomic Habits</div><div class="book-author">James Clear</div><span class="extract-link">Extract →</span></button>
+      <button class="book-card" onclick="tryExtract('$100M Offers')"><div class="spine"></div><div class="book-title">$100M Offers</div><div class="book-author">Alex Hormozi</div><span class="extract-link">Extract →</span></button>
+      <button class="book-card" onclick="tryExtract('The E-Myth Revisited')"><div class="spine"></div><div class="book-title">The E-Myth Revisited</div><div class="book-author">Michael Gerber</div><span class="extract-link">Extract →</span></button>
+      <button class="book-card" onclick="tryExtract('Never Split the Difference')"><div class="spine"></div><div class="book-title">Never Split the Difference</div><div class="book-author">Chris Voss</div><span class="extract-link">Extract →</span></button>
+      <button class="book-card" onclick="tryExtract('Deep Work')"><div class="spine"></div><div class="book-title">Deep Work</div><div class="book-author">Cal Newport</div><span class="extract-link">Extract →</span></button>
+      <button class="book-card" onclick="tryExtract('Rich Dad Poor Dad')"><div class="spine"></div><div class="book-title">Rich Dad Poor Dad</div><div class="book-author">Robert Kiyosaki</div><span class="extract-link">Extract →</span></button>
     </div>
-    <div id="trendingWrap" style="display:none;margin-bottom:20px;background:#fff;border:0.5px solid #d2d2d7;border-radius:14px;padding:16px 20px;"><div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:#6e6e73;margin-bottom:12px;">🔥 Trending Among Founders This Week</div><div id="trendingChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div></div>
-    <div class="books-grid">
-      <div class="book-card" onclick="tryExtract('Atomic Habits')"><div class="book-card-title">Atomic Habits</div><div class="book-card-author">James Clear</div></div>
-      <div class="book-card" onclick="tryExtract('$100M Offers')"><div class="book-card-title">$100M Offers</div><div class="book-card-author">Alex Hormozi</div></div>
-      <div class="book-card" onclick="tryExtract('The E-Myth Revisited')"><div class="book-card-title">The E-Myth Revisited</div><div class="book-card-author">Michael Gerber</div></div>
-      <div class="book-card" onclick="tryExtract('Never Split the Difference')"><div class="book-card-title">Never Split the Difference</div><div class="book-card-author">Chris Voss</div></div>
-      <div class="book-card" onclick="tryExtract('Deep Work')"><div class="book-card-title">Deep Work</div><div class="book-card-author">Cal Newport</div></div>
-      <div class="book-card" onclick="tryExtract('Rich Dad Poor Dad')"><div class="book-card-title">Rich Dad Poor Dad</div><div class="book-card-author">Robert Kiyosaki</div></div>
+  </div>
+</section>
+
+<section class="block" style="background:var(--parchment-card); border-top:1px solid var(--parchment-line); border-bottom:1px solid var(--parchment-line);">
+  <div class="block-inner">
+    <div class="section-head reveal">
+      <p class="eyebrow" style="color:var(--gold); text-align:center;">Not another curated shelf</p>
+      <h2>Libraries have <em>six thousand books.</em><br>We extract the one you need.</h2>
     </div>
-    <div class="search-row">
-      <input type="text" id="bookInput" placeholder="Or type any book title..." onkeydown="if(event.key==='Enter')tryExtract(document.getElementById('bookInput').value)"/>
-      <button id="goBtn" onclick="tryExtract(document.getElementById('bookInput').value)">Extract →</button>
+    <div class="diff-grid reveal">
+      <div class="diff-item">
+        <div class="diff-num mono">01</div>
+        <h3>Any book, not their list</h3>
+        <p>Curated libraries summarize what's already popular. Type a book they've never heard of and get the same 60-second extraction.</p>
+      </div>
+      <div class="diff-item">
+        <div class="diff-num mono">02</div>
+        <h3>Made when you ask</h3>
+        <p>Nothing is pre-written and sitting in a warehouse. Each extraction is generated fresh, against the specific edition you named.</p>
+      </div>
+      <div class="diff-item">
+        <div class="diff-num mono">03</div>
+        <h3>Action steps, not trivia</h3>
+        <p>Key points tell you what the author said. Action steps tell you what to do about it by Monday morning.</p>
+      </div>
     </div>
-    <div class="result-wrap"><div id="output"></div></div>
-    <div id="featureNav" style="display:none;margin-top:32px;max-width:800px;margin-left:auto;margin-right:auto;">
+  </div>
+</section>
+
+<section class="pull">
+  <blockquote class="reveal">"Your competitors are reading the whole book. You don't have to."</blockquote>
+  <cite class="reveal">— read less. know more.</cite>
+</section>
+
+<section class="block" id="pricing">
+  <div class="block-inner">
+    <div class="section-head reveal">
+      <p class="eyebrow" style="color:var(--gold); text-align:center;">Pricing</p>
+      <h2>Simple. <em>Sharp.</em></h2>
+      <p>Start free. Pay only when you love it.</p>
+    </div>
+    <div class="pricing-grid reveal">
+      <div class="price-card">
+        <div class="tier">Free</div>
+        <div class="price">$0</div>
+        <p class="billing">forever</p>
+        <ul class="features">
+          <li>3 free extractions</li>
+          <li>Key points and actions</li>
+          <li>No card needed</li>
+        </ul>
+        <button class="ghost" onclick="showAuth('signup')">Start free →</button>
+      </div>
+      <div class="price-card featured">
+        <span class="badge">Most popular</span>
+        <div class="tier">Pro</div>
+        <div class="price">$9<span class="per">/mo</span></div>
+        <p class="billing">billed monthly · or $79/year</p>
+        <ul class="features">
+          <li>Unlimited extractions</li>
+          <li>Key points and actions</li>
+          <li>Weekly curated drops</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <button onclick="showPaywall()">Get the edge →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="block-inner">
+    <div class="section-head reveal">
+      <p class="eyebrow" style="color:var(--gold); text-align:center;">Questions</p>
+      <h2>Before you <em>start.</em></h2>
+    </div>
+    <div class="faq reveal">
+      <details class="faq-item">
+        <summary>What happens if I type a book you don't recognize?</summary>
+        <p>Nothing's pre-loaded — every extraction is generated the moment you ask, so an obscure or brand-new title works the same as a bestseller.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How accurate is the extraction?</summary>
+        <p>It's built to surface the author's core argument and the concrete steps they recommend, not to replace a close read for research or citation.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I cancel Pro anytime?</summary>
+        <p>Yes — cancel from your account settings and you'll keep access until the end of the billing period.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<div id="featureNav" style="display:none;margin-top:32px;max-width:800px;margin-left:auto;margin-right:auto;">
       <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;border-bottom:0.5px solid #d2d2d7;padding-bottom:12px;align-items:center;justify-content:space-between;">
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button id="tab-extract" onclick="switchFeature('extract')" style="background:#1d1d1f;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;">⚡ Extract</button>
@@ -372,59 +557,6 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
   <button onclick="document.getElementById('pushBanner').style.display='none'" style="background:transparent;border:none;color:#888;cursor:pointer;font-size:1rem;padding:4px;">✕</button>
 </div>
 
-<div class="price-section">
-  <div class="price-inner">
-    <div class="section-header">
-      <div class="section-eyebrow">Pricing</div>
-      <h2 class="section-title">Simple. Sharp.</h2>
-      <p class="section-sub">Start free. Pay only when you love it.</p>
-    </div>
-    <div class="toggle-wrap">
-      <span class="toggle-label active" id="lbl-monthly">Monthly</span>
-      <div class="toggle" id="planToggle" onclick="togglePlan()"><div class="toggle-dot"></div></div>
-      <span class="toggle-label" id="lbl-annual">Annual <span class="save-badge">Save 27%</span></span>
-    </div>
-    <div class="price-cards">
-      <div class="pc">
-        <div class="pc-plan">Free</div>
-        <div class="pc-price">$0</div>
-        <div class="pc-period">forever</div>
-        <ul class="pc-list">
-          <li>3 free extractions</li>
-          <li>Key points + actions</li>
-          <li>No card needed</li>
-        </ul>
-        <button class="pc-btn light" onclick="showAuth('signup')">Start free →</button>
-      </div>
-      <div class="pc hot">
-        <div class="hot-tag">Most popular</div>
-        <div class="pc-plan">Pro</div>
-        <div class="pc-price" id="proPrice">$9<sub>/mo</sub></div>
-        <div class="pc-period" id="proPeriod">billed monthly</div>
-        <ul class="pc-list">
-          <li>Unlimited extractions</li>
-          <li>Key points + actions</li>
-          <li>Weekly curated drops</li>
-          <li>Cancel anytime</li>
-        </ul>
-        <button class="pc-btn dark" onclick="showPaywall()">Get the edge →</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="bottom-cta">
-  <h2>Read less.<br><em>Know more.</em></h2>
-  <p>Your competitors are reading the whole book. You don't have to.</p>
-  <button class="btn" onclick="showAuth('signup')">Extract your first book free →</button>
-</div>
-
-<footer>
-  <div class="fl">Sharp<em>-Stack</em></div>
-  <div class="fc">© 2026 Sharp-Stack. Built for entrepreneurs.</div>
-</footer>
-
-<!-- AUTH MODAL -->
 <div class="modal-overlay" id="authModal">
   <div class="modal">
     <h2 id="authTitle">Create your <em>account.</em></h2>
@@ -464,12 +596,62 @@ footer{padding:28px 48px;border-top:0.5px solid var(--border);display:flex;justi
         <div class="plan-opt-save">Save $29</div>
       </div>
     </div>
-    <button class="modal-btn" id="checkoutBtn" onclick="startCheckout()">Get unlimited access →</button>
-    <button class="modal-close-btn" onclick="closePaywall()">Maybe later</button>
-  </div>
+<div class="modal-overlay" id="paywallModal">
+  <div class="modal">
+    <div class="pw-icon">⚡</div>
+    <h2>You've found the <em>edge.</em></h2>
+    <p class="modal-sub">You've used your 3 free extractions. Unlock unlimited access.</p>
+    <ul class="pw-features">
+      <li>Unlimited book extractions</li>
+      <li>Key points + action steps</li>
+      <li>Weekly curated drops</li>
+      <li>Cancel anytime</li>
+    </ul>
+    <div class="plan-row">
+      <div class="plan-opt selected" id="plan-monthly" onclick="selectPlan('monthly')">
+        <div class="plan-opt-name">Monthly</div>
+        <div class="plan-opt-price">$9</div>
+        <div class="plan-opt-sub">per month</div>
+      </div>
+      <div class="plan-opt" id="plan-annual" onclick="selectPlan('annual')">
+        <div class="plan-opt-name">Annual</div>
+        <div class="plan-opt-price">$79</div>
+        <div class="plan-opt-sub">per year</div>
+        <div class="plan-opt-save">Save $29</div>
+      </div>
+    </div>
+
+<!-- PUSH NOTIFICATION BANNER -->
+<div id="pushBanner" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--text-on-ink);border-radius:4px;padding:14px 20px;display:flex;align-items:center;gap:14px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-width:420px;width:90%;">
+  <div style="font-size:1.4rem;">🔔</div>
+  <div style="flex:1;"><div style="font-weight:600;font-size:0.85rem;margin-bottom:2px;font-family:'Fraunces',serif;">Never break your streak</div><div style="font-size:0.75rem;color:#CFC6B4;">Get a daily reminder to extract a book</div></div>
+  <button onclick="enablePush()" style="background:var(--gold);color:var(--ink);border:none;border-radius:2px;padding:8px 16px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;letter-spacing:0.05em;text-transform:uppercase;">Enable →</button>
+  <button onclick="document.getElementById('pushBanner').style.display='none'" style="background:transparent;border:none;color:#888;cursor:pointer;font-size:1rem;padding:4px;">✕</button>
 </div>
 
+</main>
+
+<footer>
+  <h2>Read less.<br><em>Know more.</em></h2>
+  <p class="foot-lede">Your first extraction is free. Sixty seconds from now, you'll have the edge.</p>
+  <button onclick="showAuth('signup')">Extract your first book free →</button>
+  <div class="foot-bottom">
+    <span>© 2026 Sharp-Stack. Built for entrepreneurs.</span>
+    <span>Terms · Privacy · Contact</span>
+  </div>
+</footer>
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-82R9TLQDFG"></script>
 <script>
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-82R9TLQDFG');
+
+
 // State
 let token = localStorage.getItem('ss_token');
 let currentUser = null;
@@ -1175,6 +1357,18 @@ document.addEventListener('keydown', e => {
 });
 
 init();
+
+
+// Override tryExtract to work with new design
+// (existing tryExtract function already handles everything)
+
+// Make book cards work
+document.querySelectorAll('.book-card').forEach(card => {
+  const title = card.getAttribute('data-title') || card.querySelector('.book-title')?.textContent;
+  if (title) {
+    card.onclick = () => tryExtract(title);
+  }
+});
 </script>
 </body>
 </html>
