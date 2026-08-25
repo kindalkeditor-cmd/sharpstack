@@ -16,6 +16,9 @@
     --ink:#17130F; --ink-raised:#221C15; --parchment:#F2EAD9; --parchment-card:#FBF7EC;
     --parchment-line:#DCD0B4; --gold:#A9812E; --gold-bright:#C89B42; --wax:#7C2D26;
     --ink-soft:#8A8071; --ink-soft-2:#4A4234; --text-on-ink:#F2EAD9;
+    /* Legacy variables for functional components */
+    --bg:#F2EAD9; --surface:#FBF7EC; --border:#DCD0B4; --black:#17130F;
+    --mid:#8A8071; --green:#1A9E5C; --red:#C0392B; --gold-bg:#FBF3E4;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -233,9 +236,9 @@
 .modal h2{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px;}
 .modal h2 em{font-style:italic;color:var(--gold);}
 .modal-sub{font-size:0.85rem;color:var(--mid);margin-bottom:28px;font-weight:300;}
-.modal-input{width:100%;background:var(--bg);border:0.5px solid var(--border);border-radius:12px;padding:13px 18px;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--black);outline:none;margin-bottom:12px;transition:border-color 0.2s;text-align:left;}
-.modal-input:focus{border-color:var(--black);}
-.modal-btn{width:100%;background:var(--black);color:#fff;border:none;padding:14px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;transition:opacity 0.2s;margin-bottom:12px;}
+.modal-input{width:100%;background:var(--parchment);border:1px solid var(--parchment-line);border-radius:2px;padding:13px 18px;font-family:'Newsreader',serif;font-size:0.88rem;color:var(--ink);outline:none;margin-bottom:12px;transition:border-color 0.2s;text-align:left;}
+.modal-input:focus{border-color:var(--gold);}
+.modal-btn{width:100%;background:var(--ink);color:var(--parchment);border:none;padding:14px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s;margin-bottom:12px;}
 .modal-btn:hover{opacity:0.75;}
 .modal-btn:disabled{opacity:0.4;cursor:not-allowed;}
 .modal-switch{font-size:0.78rem;color:var(--mid);cursor:pointer;}
@@ -1361,6 +1364,17 @@ init();
 
 // Override tryExtract to work with new design
 // (existing tryExtract function already handles everything)
+
+// Intersection observer for reveal animations
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
 // Make book cards work
 document.querySelectorAll('.book-card').forEach(card => {
