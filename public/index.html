@@ -127,6 +127,7 @@
   .card-eyebrow{font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold);}
   .card-title{font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:4px 0 14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .core-idea{background:var(--parchment); border-left:2px solid var(--gold); padding:10px 14px; font-size:14px; line-height:1.5; margin-bottom:16px; opacity:0; transform:translateY(6px); transition:opacity 400ms ease, transform 400ms ease;}
+  .result-card .core-idea{opacity:1 !important; transform:none !important; background:var(--parchment); border-left:3px solid var(--gold); padding:16px 18px;}
   .core-idea.visible{opacity:1; transform:translateY(0);}
   .points{list-style:none; margin:0; padding:0;}
   .points li{display:flex; gap:10px; font-size:13px; line-height:1.5; padding:8px 0; border-top:1px solid var(--parchment-line); opacity:0; transform:translateY(6px); transition:opacity 350ms ease, transform 350ms ease;}
@@ -899,6 +900,23 @@ async function extract(title) {
 
     const kp = d.key_points.map((p,i) => `<div class="point-row"><div class="point-badge">${String(i+1).padStart(2,'0')}</div><div class="point-text">${p}</div></div>`).join('');
     const as = d.action_steps.map(p => `<div class="point-row"><div class="point-badge arrow">→</div><div class="point-text">${p}</div></div>`).join('');
+
+    // Update paper card on right
+    const cardTitleEl = document.getElementById('cardTitle');
+    const coreIdeaEl = document.getElementById('coreIdea');
+    const pointsEl = document.getElementById('points');
+    const coverLabelEl = document.getElementById('coverLabel');
+    const cardEl = document.getElementById('card');
+    const sealEl = document.getElementById('seal');
+    if (coverLabelEl) coverLabelEl.textContent = d.title;
+    if (cardTitleEl) cardTitleEl.textContent = d.title;
+    if (coreIdeaEl) { coreIdeaEl.textContent = d.core_idea; setTimeout(() => coreIdeaEl.classList.add('visible'), 200); }
+    if (pointsEl) {
+      pointsEl.innerHTML = d.key_points.slice(0,4).map((p,i) => `<li><span class="num">${String(i+1).padStart(2,'0')}</span><span>${p}</span></li>`).join('');
+      pointsEl.querySelectorAll('li').forEach((li,i) => setTimeout(() => li.classList.add('visible'), 300 + i*80));
+    }
+    if (cardEl) { cardEl.classList.remove('visible'); setTimeout(() => cardEl.classList.add('visible'), 50); }
+    if (sealEl) { sealEl.classList.remove('visible'); setTimeout(() => sealEl.classList.add('visible'), 500); }
 
     out.innerHTML = `
       <div class="result-card">
