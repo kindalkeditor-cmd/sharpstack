@@ -292,6 +292,43 @@
 .compare-inputs{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
 .compare-input{flex:1;min-width:140px;background:var(--parchment);border:1px solid var(--parchment-line);border-radius:2px;padding:10px 14px;font-family:"Newsreader",serif;font-size:0.88rem;color:var(--ink);outline:none;}
 .compare-input:focus{border-color:var(--gold);}
+
+/* ── RESULT CARD ── */
+.result-card{background:var(--parchment-card);border:1px solid var(--parchment-line);border-radius:4px;overflow:hidden;margin-top:24px;animation:fadeUp 0.4s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.result-hero-bar{background:var(--ink);color:var(--text-on-ink);padding:24px 28px;}
+.book-badge{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.book-name{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:700;color:var(--text-on-ink);margin-bottom:4px;line-height:1.2;}
+.book-author-txt{font-size:0.82rem;color:var(--ink-soft);font-style:italic;}
+.result-body{padding:24px 28px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.result-full{grid-column:1/-1;}
+.core-idea{background:var(--parchment);border:1px solid var(--parchment-line);border-left:3px solid var(--gold);border-radius:2px;padding:18px 20px;margin-bottom:0;}
+.core-label{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.core-text{font-family:'Newsreader',serif;font-size:1rem;color:var(--ink);line-height:1.6;}
+.r-section-label{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-soft-2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--parchment-line);}
+.point-row{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;}
+.point-badge{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--gold);font-weight:700;min-width:24px;padding-top:2px;}
+.point-badge.arrow{color:var(--gold);}
+.point-text{font-family:'Newsreader',serif;font-size:0.9rem;color:var(--ink);line-height:1.55;}
+.one-liner-wrap{background:var(--ink);border-radius:2px;padding:20px 24px;}
+.one-liner-label{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.one-liner-text{font-family:'Fraunces',serif;font-style:italic;font-size:1rem;color:var(--text-on-ink);line-height:1.5;}
+.apply-it-upgrade-btn{background:var(--gold);color:var(--ink);border:none;border-radius:2px;padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;font-weight:600;cursor:pointer;white-space:nowrap;letter-spacing:0.05em;text-transform:uppercase;}
+.save-btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--parchment-line);border-radius:2px;padding:8px 18px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft-2);cursor:pointer;transition:all 0.2s;margin-top:12px;}
+.save-btn:hover{border-color:var(--gold);color:var(--gold);}
+.save-btn.saved{border-color:var(--green);color:var(--green);}
+.loader{display:flex;align-items:center;gap:12px;padding:40px;font-family:'IBM Plex Mono',monospace;font-size:0.82rem;color:var(--ink-soft-2);letter-spacing:0.05em;}
+.dots{display:flex;gap:4px;}
+.dots span{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:dot 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:0.2s;}
+.dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dot{0%,80%,100%{opacity:0.2;}40%{opacity:1;}}
+@media(max-width:640px){.result-body{grid-template-columns:1fr;}.result-full{grid-column:1;}}
+/* Feature tabs */
+#featureNav{margin-top:24px;}
+#featureNav .feat-btn{background:transparent;border:1px solid var(--parchment-line);border-radius:2px;padding:8px 18px;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft-2);cursor:pointer;transition:all 0.15s;}
+#featureNav .feat-btn:hover{border-color:var(--gold);color:var(--gold);}
+
 </style>
 </head>
 <body>
