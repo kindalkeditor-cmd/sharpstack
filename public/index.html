@@ -648,30 +648,10 @@
         <div class="plan-opt-save">Save $29</div>
       </div>
     </div>
-<div class="modal-overlay" id="paywallModal">
-  <div class="modal">
-    <div class="pw-icon">⚡</div>
-    <h2>You've found the <em>edge.</em></h2>
-    <p class="modal-sub">You've used your 3 free extractions. Unlock unlimited access.</p>
-    <ul class="pw-features">
-      <li>Unlimited book extractions</li>
-      <li>Key points + action steps</li>
-      <li>Weekly curated drops</li>
-      <li>Cancel anytime</li>
-    </ul>
-    <div class="plan-row">
-      <div class="plan-opt selected" id="plan-monthly" onclick="selectPlan('monthly')">
-        <div class="plan-opt-name">Monthly</div>
-        <div class="plan-opt-price">$9</div>
-        <div class="plan-opt-sub">per month</div>
-      </div>
-      <div class="plan-opt" id="plan-annual" onclick="selectPlan('annual')">
-        <div class="plan-opt-name">Annual</div>
-        <div class="plan-opt-price">$79</div>
-        <div class="plan-opt-sub">per year</div>
-        <div class="plan-opt-save">Save $29</div>
-      </div>
-    </div>
+    <button id="checkoutBtn" onclick="startCheckout()" style="width:100%;background:var(--ink);color:var(--parchment);border:none;padding:16px;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-top:16px;">Get the Edge →</button>
+    <button onclick="closePaywall()" style="width:100%;background:transparent;border:none;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;padding:12px;margin-top:4px;">Maybe later</button>
+  </div>
+</div>
 
 <!-- PUSH NOTIFICATION BANNER -->
 <div id="pushBanner" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--text-on-ink);border-radius:4px;padding:14px 20px;display:flex;align-items:center;gap:14px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-width:420px;width:90%;">
