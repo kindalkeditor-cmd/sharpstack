@@ -90,11 +90,11 @@
   button.ghost-dark:hover{border-color:var(--gold-bright); color:var(--gold-bright); background:transparent;}
 
   /* HERO / STAGE */
-  .stage{background:var(--ink); color:var(--text-on-ink); padding:80px 48px 80px; text-align:center;}
-  .stage-grid{max-width:900px; margin:0 auto; display:flex; flex-direction:column; align-items:center; text-align:center; gap:0;}
-  .stage h1{font-size:56px;}
-  .stage .lede{max-width:560px; margin-left:auto; margin-right:auto;}
-  .extract-row{max-width:560px; margin-left:auto; margin-right:auto;}
+  .stage{background:var(--ink); color:var(--text-on-ink); padding:48px 48px 56px; text-align:center;}
+  .stage-grid{max-width:860px; margin:0 auto; display:flex; flex-direction:column; align-items:flex-start; text-align:left; gap:0;}
+  .stage h1{font-size:44px; margin-bottom:16px;}
+  .stage .lede{max-width:560px; font-size:16px; margin-bottom:24px;}
+  .extract-row{max-width:520px;}
   .eyebrow{font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); margin:0 0 20px;}
   h1{font-family:'Fraunces', serif; font-weight:500; font-size:52px; line-height:1.08; margin:0 0 22px; letter-spacing:-0.01em;}
   h1 em{font-style:italic; font-weight:500; color:var(--gold-bright);}
@@ -386,13 +386,13 @@
       </div>
 
       <!-- PAPER RESULT - shown after extraction -->
-      <div id="paperResult" style="display:none;width:100%;max-width:680px;margin:52px auto 0;">
-        <div style="background:var(--parchment-card);border:1px solid var(--parchment-line);border-radius:4px;padding:44px 48px;position:relative;box-shadow:0 8px 48px rgba(0,0,0,0.25);">
+      <div id="paperResult" style="display:none;width:100%;max-width:860px;margin:36px auto 0;">
+        <div style="background:var(--parchment-card);border:1px solid var(--parchment-line);border-radius:4px;padding:52px 60px;position:relative;box-shadow:0 8px 48px rgba(0,0,0,0.25);">
           <div id="seal" style="position:absolute;top:-18px;right:32px;width:44px;height:44px;border-radius:50%;background:var(--wax);display:flex;align-items:center;justify-content:center;transform:scale(0);transition:transform 420ms cubic-bezier(.17,1.9,.4,1);z-index:1;"><span style="color:#E8CBAE;font-family:'Fraunces',serif;font-size:15px;font-style:italic;">S</span></div>
           <div id="paperEyebrow" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;"></div>
-          <div id="paperTitle" style="font-family:'Fraunces',serif;font-size:32px;font-weight:500;color:var(--ink);line-height:1.15;margin-bottom:4px;"></div>
+          <div id="paperTitle" style="font-family:'Fraunces',serif;font-size:40px;font-weight:500;color:var(--ink);line-height:1.15;margin-bottom:6px;"></div>
           <div id="paperAuthor" style="font-family:'Newsreader',serif;font-style:italic;font-size:14px;color:var(--ink-soft);margin-bottom:32px;"></div>
-          <div id="paperCore" style="background:var(--parchment);border-left:3px solid var(--gold);padding:16px 20px;margin-bottom:32px;font-family:'Newsreader',serif;font-size:17px;line-height:1.65;color:var(--ink);opacity:0;transform:translateY(8px);transition:opacity 500ms ease,transform 500ms ease;"></div>
+          <div id="paperCore" style="background:var(--parchment);border-left:3px solid var(--gold);padding:20px 24px;margin-bottom:36px;font-family:'Newsreader',serif;font-size:19px;line-height:1.65;color:var(--ink);opacity:0;transform:translateY(8px);transition:opacity 500ms ease,transform 500ms ease;"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-bottom:32px;">
             <div>
               <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft-2);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--parchment-line);">Key Points</div>
@@ -946,7 +946,7 @@ async function extract(title) {
     if (paperQuote) {
       paperQuote.innerHTML = `
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Remember This</div>
-        <div style="font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--text-on-ink);line-height:1.5;">"${d.one_liner}"</div>`;
+        <div style="font-family:'Fraunces',serif;font-style:italic;font-size:22px;color:var(--text-on-ink);line-height:1.5;">"${d.one_liner}"</div>`;
       setTimeout(() => { paperQuote.style.opacity = '1'; }, 800);
     }
     if (sealEl) setTimeout(() => { sealEl.style.transform = 'scale(1)'; }, 600);
